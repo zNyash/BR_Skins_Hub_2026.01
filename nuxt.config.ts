@@ -10,5 +10,8 @@ export default defineNuxtConfig({
   },
 
   css: ["./app/assets/main.css"],
-  modules: ["@nuxt/ui"],
+  modules: ["@nuxt/ui", "convex-nuxt"],
+  convex: {
+    url: process.env.CONVEX_URL,
+  },
 });
