@@ -39,3 +39,12 @@ export const updatePlayer = mutation({
     await ctx.db.patch(args.id, { name: args.name });
   },
 });
+
+export const deletePlayer = mutation({
+  args: {
+    player_id: v.id("players"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.player_id);
+  },
+});
