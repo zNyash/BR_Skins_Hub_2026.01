@@ -1,26 +1,24 @@
 <template>
-  <UApp>
-    <div class="max-w-md mx-auto mt-10">
-      <h1>hello world</h1>
-      <UCard>
-        <div class="flex flex-col gap-2">
-          <span class="w-full grid grid-cols-2 gap-2">
-            <UInput label="Name" placeholder="Name" v-model="playerTextInput.name" />
-            <UInput label="Osu ID" placeholder="Osu ID" type="number" v-model="playerTextInput.osu_id" />
-          </span>
-          <UButton class="w-fit ml-auto" :loading="createPlayer.isPending.value" @click="createPlayerHandler"
-            >Click Me</UButton
-          >
-        </div>
-      </UCard>
-
-      <div>
-        <span v-for="player in players" :key="player._id">
-          <PlayerCard :name="player.name" :osu_id="player.osu_id" />
+  <main class="max-w-md mx-auto mt-10">
+    <h1>hello world</h1>
+    <div>
+      <div class="flex flex-col gap-2">
+        <span class="w-full grid grid-cols-2 gap-2">
+          <UiInput placeholder="Name" v-model="playerTextInput.name" />
+          <UiInput placeholder="Osu ID" type="number" v-model="playerTextInput.osu_id" />
         </span>
+        <UiButton class="w-fit ml-auto" :loading="createPlayer.isPending.value" @click="createPlayerHandler"
+          >Click Me</UiButton
+        >
       </div>
     </div>
-  </UApp>
+
+    <div>
+      <span v-for="player in players" :key="player._id">
+        <PlayerCard :name="player.name" :osu_id="player.osu_id" />
+      </span>
+    </div>
+  </main>
 </template>
 
 <script lang="ts" setup>
