@@ -18,7 +18,7 @@ export default defineSchema({
     author: v.optional(v.string()),
     download_url: v.string(),
     download_count: v.number(),
-    images: v.array(v.string()),
+    preview_images: v.array(v.string()),
   }).index("by_name", ["name"]),
 
   /* ------------------------- */
