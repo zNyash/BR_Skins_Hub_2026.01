@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <UApp>
     <h1>hello world</h1>
-  </div>
+    <UButton>Click Me</UButton>
+  </UApp>
 </template>
+
+<script lang="ts" setup></script>
