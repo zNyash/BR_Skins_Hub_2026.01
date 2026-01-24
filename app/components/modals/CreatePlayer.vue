@@ -32,18 +32,33 @@
 
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
-
+const toast = useToast();
 const isModalOpen = ref(false);
 const inputPlayer = ref({ name: "", osu_id: 0 });
 
 const mutationCreatePlayer = useConvexMutation(api.players.createPlayer);
 const handlerCreatePlayer = async () => {
-  if (inputPlayer.value.name === "" || inputPlayer.value.osu_id === 0) {
-    alert("Please fill in all fields.");
+  if (inputPlayer.value.osu_id === 0) {
+    toast.add({
+      icon: "lucide:alert-circle",
+      title: "Invalid Player ID",
+      description: "Please enter a valid osu! Player ID greater than 0.",
+      color: "error",
+    });
     return;
   }
 
   isModalOpen.value = false;
+
+  if (inputPlayer.value.name.trim() === "") {
+    const name = await $fetch("/api/player/refresh", {
+      method: "GET",
+      params: {
+        osu_id: inputPlayer.value.osu_id,
+      },
+    });
+    inputPlayer.value.name = name;
+  }
 
   await mutationCreatePlayer.mutate({
     name: inputPlayer.value.name,
