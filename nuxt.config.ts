@@ -10,13 +10,11 @@ export default defineNuxtConfig({
   },
 
   css: ["./app/assets/main.css"],
-  modules: ["convex-nuxt", "shadcn-nuxt", "@nuxtjs/color-mode"],
+  modules: ["convex-nuxt", "@nuxt/ui"],
   convex: {
     url: process.env.CONVEX_URL,
   },
-  shadcn: {
-    prefix: "Ui",
-  },
+
   colorMode: {
     preference: "dark",
     fallback: "dark",
