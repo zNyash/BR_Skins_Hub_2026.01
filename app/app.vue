@@ -1,9 +1,11 @@
 <template>
-  <nav class="border-muted bg-mantle/25 flex justify-center border-b backdrop-blur-3xl">
+  <nav class="border-muted bg-mantle/25 fixed top-0 z-50 flex w-full justify-center border-b backdrop-blur-3xl">
     <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
   </nav>
   <UApp>
-    <NuxtPage />
+    <main class="mt-24">
+      <NuxtPage />
+    </main>
   </UApp>
 </template>
 

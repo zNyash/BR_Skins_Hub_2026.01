@@ -15,6 +15,8 @@
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
+const toast = useToast();
+
 const props = defineProps<{
   name: string;
   osu_id: number;
@@ -23,12 +25,35 @@ const props = defineProps<{
 const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
 const isDeleting = ref(false);
 const handlePlayerDelete = async () => {
+  const mutationState = toast.add({
+    icon: "svg-spinners:ring-resize",
+    title: "Deleting player...",
+    description: `Player ${props.name} is being deleted in the background...`,
+    color: "info",
+    duration: 0,
+  });
+
   try {
     isDeleting.value = true;
     await deletePlayerMutation.mutate({ player_id: props._id });
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    toast.update(mutationState.id, {
+      icon: "material-symbols:check-small-rounded",
+      title: "Successfully deleted player",
+      description: `Player ${props.name} has been deleted successfully.`,
+      color: "success",
+      duration: 3000,
+    });
   } catch (error) {
     console.error("Error deleting player:", error);
-    alert("Failed to delete player. Please try again.");
+    toast.update(mutationState.id, {
+      icon: "material-symbols:error-outline-rounded",
+      title: "Error deleting player",
+      description: `There was an error deleting player ${props.name}. Please try again.`,
+      color: "error",
+      duration: 3000,
+    });
   } finally {
     isDeleting.value = false;
   }
