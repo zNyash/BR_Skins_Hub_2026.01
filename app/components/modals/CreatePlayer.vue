@@ -1,5 +1,5 @@
 <template>
-  <UModal title="Add a player to the website" v-model:open="isModalOpen" :close="false" :fullscreen="false">
+  <UModal title="Add a player to the website" v-model:open="isModalOpen" :close="false">
     <UButton label="Add Player" class="ml-auto w-fit" />
     <template #body>
       <div class="flex flex-col items-start gap-2">

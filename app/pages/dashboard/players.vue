@@ -2,7 +2,7 @@
   <div class="mx-auto flex max-w-md flex-col gap-4">
     <ModalsCreatePlayer />
 
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-1.5">
       <div v-if="playersLoading" class="flex w-full flex-col justify-center gap-2">
         <USkeleton class="h-13.5 w-full" />
         <USkeleton class="h-13.5 w-full" />
