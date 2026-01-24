@@ -6,11 +6,11 @@
     <template #body>
       <span class="flex flex-col items-start gap-4">
         <!-- Inputs -->
-        <div v-if="inputPlayerData" class="flex w-full flex-col items-start gap-2">
+        <div v-if="inputPlayerName" class="flex w-full flex-col items-start gap-2">
           <span class="flex w-full flex-col gap-0.5">
             <p class="text-muted text-xs">Player Username</p>
             <UFieldGroup>
-              <UInput placeholder="Name" v-model="inputPlayerData.name" class="w-full" />
+              <UInput placeholder="Name" v-model="inputPlayerName" class="w-full" />
               <UButton
                 icon="lucide:refresh-ccw"
                 color="neutral"
@@ -35,30 +35,34 @@
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
+/* Props */
 const props = defineProps<{
   playerId: Id<"players">;
   playerName: string;
 }>();
+
+/* Booleans */
 const isModalOpen = ref(false);
 const isRefreshingUsername = ref(false);
-const { data: playerData } = useConvexQuery(api.players.getPlayer, { id: props.playerId });
-const mutationPlayerUpdate = useConvexMutation(api.players.updatePlayer);
 
-const inputPlayerData = ref({
-  name: playerData.value?.name || props.playerName,
+/* Convex mutations and queries */
+const mutationPlayerUpdate = useConvexMutation(api.players.updatePlayer);
+const inputPlayerName = computed({
+  get: () => props.playerName,
+  set: (value: string) => {
+    inputPlayerName.value = value;
+  },
 });
 
 // Functions
 const handleCloseModal = () => {
   isModalOpen.value = false;
-  inputPlayerData.value = {
-    name: playerData.value?.name || props.playerName,
-  };
+  inputPlayerName.value = props.playerName;
 };
 const handleSaveChanges = async () => {
   await mutationPlayerUpdate.mutate({
     id: props.playerId,
-    name: inputPlayerData.value?.name || "",
+    name: inputPlayerName.value || "",
   });
   isModalOpen.value = false;
 };
@@ -68,11 +72,11 @@ const handlePlayerNameRefresh = async () => {
 
     const response = await $fetch("/api/player/refresh", {
       method: "GET",
-      params: { osu_id: playerData.value?.osu_id },
+      params: { osu_id: props.playerId },
     });
 
     if (response) {
-      inputPlayerData.value.name = response;
+      inputPlayerName.value = response;
     }
   } catch (error) {
     console.error("Error refreshing player name:", error);
