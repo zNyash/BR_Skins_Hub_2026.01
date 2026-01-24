@@ -22,4 +22,8 @@ export default defineNuxtConfig({
     classPrefix: "",
     storageKey: "nuxt-color-mode",
   },
+  runtimeConfig: {
+    osuClientSecret: process.env.OSU_CLIENT_SECRET,
+    public: { osuClientId: process.env.OSU_CLIENT_ID },
+  },
 });
