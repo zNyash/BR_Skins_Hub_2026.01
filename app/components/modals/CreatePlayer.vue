@@ -5,25 +5,21 @@
       <div class="flex flex-col items-start gap-2">
         <span class="flex w-full flex-col gap-0.5">
           <p class="text-muted text-xs">Player Username</p>
-          <UInput placeholder="Name" v-model="inputPlayer.name" />
+          <UInput placeholder="Name" v-model="formState.name" />
         </span>
         <span class="flex w-full flex-col gap-0.5">
           <p class="text-muted text-xs">Player ID from osu!</p>
-          <UInput type="number" :default-value="0" v-model="inputPlayer.osu_id" />
+          <UInput type="number" :default-value="0" v-model="formState.osu_id" />
         </span>
         <span class="flex w-full flex-row justify-end gap-2">
           <UButton
-            @click="
-              () => {
-                isModalOpen = false;
-              }
-            "
+            @click="closeModal"
             label="Cancel"
             variant="ghost"
             color="neutral"
             class="mt-4"
           />
-          <UButton @click="handlerCreatePlayer" label="Save" class="mt-4" />
+          <UButton @click="handlerCreatePlayer" label="Save" :loading="isLoading" class="mt-4" />
         </span>
       </div>
     </template>
@@ -32,41 +28,96 @@
 
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
-const toast = useToast();
-const isModalOpen = ref(false);
-const inputPlayer = ref({ name: "", osu_id: 0 });
 
-const mutationCreatePlayer = useConvexMutation(api.players.createPlayer);
+// ------ Types ------
+interface PlayerFormState {
+  name: string;
+  osu_id: number | undefined;
+}
+const PLAYER_FORM_DEFAULT: PlayerFormState = {
+  name: "",
+  osu_id: undefined,
+};
+
+// ------ Composables ------
+const toast = useToast();
+const createPlayerMutation = useConvexMutation(api.players.createPlayer);
+
+// ------ Reactive States ------
+const isModalOpen = ref(false);
+const isLoading = ref(false);
+const formState = ref<PlayerFormState>({ ...PLAYER_FORM_DEFAULT });
+
+// ------ Helpers ------
+const closeModal = () => {
+  isModalOpen.value = false;
+};
+const fetchPlayerUsername = async (osuId: number) => {
+  return await $fetch("/api/player/refresh", {
+        method: "GET",
+        params: {
+          osu_id: osuId,
+        },
+      });
+}
+
+// ----- Watchers -----
+watch(
+  () => isModalOpen.value,
+  (newVal) => {
+    if (!newVal) {
+      formState.value = { ...PLAYER_FORM_DEFAULT };
+    }
+  }
+)
+
+/* ------------------- */
+/* Create Player Logic */
+/* ------------------- */
 const handlerCreatePlayer = async () => {
-  if (inputPlayer.value.osu_id === 0) {
+  if (!formState.value.osu_id || formState.value.osu_id <= 0) {
     toast.add({
       icon: "lucide:alert-circle",
       title: "Invalid Player ID",
       description: "Please enter a valid osu! Player ID greater than 0.",
-      color: "error",
+      color: "warning",
     });
     return;
   }
 
-  isModalOpen.value = false;
+  isLoading.value = true;
 
-  if (inputPlayer.value.name.trim() === "") {
-    const name = await $fetch("/api/player/refresh", {
-      method: "GET",
-      params: {
-        osu_id: inputPlayer.value.osu_id,
-      },
+  try {
+    let finalName = formState.value.name.trim();
+
+    if (!finalName) {
+      finalName = await fetchPlayerUsername(formState.value.osu_id);
+    }
+
+    await createPlayerMutation.mutate({
+      name: finalName,
+      osu_id: formState.value.osu_id,
     });
-    inputPlayer.value.name = name;
+
+    toast.add({
+      icon: "lucide:check-circle",
+      title: `Created the player ${finalName} successfully!`,
+      color: "success",
+    });
+
+    closeModal();
+  } catch (error) {
+    console.error("Error creating player:", error);
+
+    toast.add({
+      icon: "lucide:alert-circle",
+      title: "Error creating player",
+      description: (error as Error).message || "An unexpected error occurred.",
+      color: "error",
+    });
+  } finally {
+    isLoading.value = false;
   }
-
-  await mutationCreatePlayer.mutate({
-    name: inputPlayer.value.name,
-    osu_id: inputPlayer.value.osu_id,
-  });
-
-  inputPlayer.value.name = "";
-  inputPlayer.value.osu_id = 0;
 };
 </script>
 
