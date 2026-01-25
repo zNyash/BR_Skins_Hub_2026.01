@@ -6,11 +6,11 @@
     <template #body>
       <span class="flex flex-col items-start gap-4">
         <!-- Inputs -->
-        <div v-if="inputPlayerName" class="flex w-full flex-col items-start gap-2">
+        <div class="flex w-full flex-col items-start gap-2">
           <span class="flex w-full flex-col gap-0.5">
             <p class="text-muted text-xs">Player Username</p>
             <UFieldGroup>
-              <UInput placeholder="Name" v-model="inputPlayerName" class="w-full" />
+              <UInput placeholder="Name" v-model="inputPlayerName" class="w-full" @keydown.enter="handleSaveChanges" />
               <UButton
                 icon="lucide:refresh-ccw"
                 color="neutral"
@@ -35,45 +35,83 @@
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
-/* Props */
 const props = defineProps<{
   playerId: Id<"players">;
   playerName: string;
+  osuId: number;
 }>();
 
-/* Booleans */
+/* --------------- */
+/* Refs and Consts */
+/* --------------- */
 const isModalOpen = ref(false);
 const isRefreshingUsername = ref(false);
 
-/* Convex mutations and queries */
-const mutationPlayerUpdate = useConvexMutation(api.players.updatePlayer);
-const inputPlayerName = computed({
-  get: () => props.playerName,
-  set: (value: string) => {
-    inputPlayerName.value = value;
-  },
-});
+const inputPlayerName = ref(props.playerName);
 
-// Functions
+const toast = useToast();
+const mutationPlayerUpdate = useConvexMutation(api.players.updatePlayer);
+
+/* ---------- */
+/* Life Cycle */
+/* ---------- */
+watch(
+  () => props.playerName,
+  (newName) => {
+    inputPlayerName.value = newName;
+  },
+);
+
+/* ----------------- */
+/* Handler Functions */
+/* ----------------- */
 const handleCloseModal = () => {
   isModalOpen.value = false;
   inputPlayerName.value = props.playerName;
 };
 const handleSaveChanges = async () => {
-  await mutationPlayerUpdate.mutate({
-    id: props.playerId,
-    name: inputPlayerName.value || "",
-  });
   isModalOpen.value = false;
+
+  const toastToUpdate = toast.add({
+    icon: "svg-spinners:ring-resize",
+    title: `Updating player's name to ${inputPlayerName.value}...`,
+    color: "info",
+    duration: 0,
+  });
+
+  try {
+    await mutationPlayerUpdate.mutate({
+      id: props.playerId,
+      name: inputPlayerName.value || "",
+    });
+
+    toast.update(toastToUpdate.id, {
+      icon: "lucide:circle-check-big",
+      title: `Successfully updated player's name to ${inputPlayerName.value}!`,
+      color: "success",
+      duration: 3000,
+    });
+  } catch (error) {
+    console.error("Error updating player name:", error);
+
+    toast.update(toastToUpdate.id, {
+      icon: "lucide:circle-x",
+      title: `Error updating player's name to ${inputPlayerName.value}.`,
+      description: `The error: ${(error as Error).message}`,
+      color: "error",
+      duration: 5000,
+    });
+  }
 };
 const handlePlayerNameRefresh = async () => {
   try {
     isRefreshingUsername.value = true;
 
-    const response = await $fetch("/api/player/refresh", {
+    const response = await $fetch<string>("/api/player/refresh", {
       method: "GET",
-      params: { osu_id: props.playerId },
+      params: { osu_id: props.osuId },
     });
+    console.log(response);
 
     if (response) {
       inputPlayerName.value = response;
