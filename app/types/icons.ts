@@ -1,0 +1,18 @@
+const ICONS = {
+    SUCCESS: "lucide:circle-check",
+    ERROR: "lucide:circle-x",
+    WARNING: "lucide:triangle-alert",
+
+    BUTTONS: {
+        CLOSE: "lucide:x",
+        SUBMIT: "lucide:check",
+        ADD: "lucide:plus",
+        WARNING: "lucide:triangle-alert",
+        REFRESH: "lucide:refresh-cw",
+        DELETE: "lucide:trash-2",
+        EDIT: "lucide:square-pen",
+    }
+
+}
+
+export { ICONS }

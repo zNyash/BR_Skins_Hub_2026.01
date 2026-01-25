@@ -10,7 +10,7 @@
           <span class="flex w-full flex-col gap-0.5">
             <p class="text-muted text-xs">Player Username</p>
             <UFieldGroup>
-              <UInput placeholder="Name" v-model="inputPlayerName" class="w-full" @keydown.enter="handleSaveChanges" />
+              <UInput placeholder="Name" v-model="playerNameInput" class="w-full" @keydown.enter="handleSaveChanges" />
               <UButton
                 icon="lucide:refresh-ccw"
                 color="neutral"
@@ -23,8 +23,8 @@
         </div>
         <!-- Buttons -->
         <div class="flex w-full flex-row justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="handleCloseModal" />
-          <UButton label="Save" @click="handleSaveChanges" />
+          <UButton label="Cancel" color="neutral" variant="ghost" @click="closeModal" />
+          <UButton label="Save" @click="handleSaveChanges" :loading="isSavingChanges" />
         </div>
       </span>
     </template>
@@ -32,6 +32,9 @@
 </template>
 
 <script lang="ts" setup>
+import fetchPlayerUsername from "~/helpers/fetchPlayerUsername";
+import { TOAST } from "~/types/constants";
+import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
@@ -41,83 +44,101 @@ const props = defineProps<{
   osuId: number;
 }>();
 
-/* --------------- */
-/* Refs and Consts */
-/* --------------- */
+// ------ Refs and Consts ------
 const isModalOpen = ref(false);
-const isRefreshingUsername = ref(false);
 
-const inputPlayerName = ref(props.playerName);
+const playerNameInput = ref(props.playerName);
 
 const toast = useToast();
-const mutationPlayerUpdate = useConvexMutation(api.players.updatePlayer);
+const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 
-/* ---------- */
-/* Life Cycle */
-/* ---------- */
+// ------ Watchers ------
 watch(
   () => props.playerName,
   (newName) => {
-    inputPlayerName.value = newName;
+    playerNameInput.value = newName;
+  },
+);
+watch(
+  () => isModalOpen.value,
+  (newVal) => {
+    if (!newVal) {
+      playerNameInput.value = props.playerName;
+    }
   },
 );
 
-/* ----------------- */
-/* Handler Functions */
-/* ----------------- */
-const handleCloseModal = () => {
+// ------ Helpers ------
+const closeModal = () => {
   isModalOpen.value = false;
-  inputPlayerName.value = props.playerName;
 };
-const handleSaveChanges = async () => {
-  isModalOpen.value = false;
 
-  const toastToUpdate = toast.add({
-    icon: "svg-spinners:ring-resize",
-    title: `Updating player's name to ${inputPlayerName.value}...`,
-    color: "info",
-    duration: 0,
-  });
+/* -------------------- */
+/* Saving Changes Logic */
+/* -------------------- */
+const isSavingChanges = ref(false);
+const handleSaveChanges = async () => {
+  isSavingChanges.value = true;
 
   try {
-    await mutationPlayerUpdate.mutate({
+    await updatePlayerMutation.mutate({
       id: props.playerId,
-      name: inputPlayerName.value || "",
+      name: playerNameInput.value,
     });
 
-    toast.update(toastToUpdate.id, {
-      icon: "lucide:circle-check-big",
-      title: `Successfully updated player's name to ${inputPlayerName.value}!`,
+    toast.add({
+      icon: ICONS.SUCCESS,
+      title: `Successfully updated player's username to ${playerNameInput.value}!`,
       color: "success",
-      duration: 3000,
+      duration: TOAST.DURATION.SUCCESS,
     });
+
+    closeModal();
   } catch (error) {
     console.error("Error updating player name:", error);
 
-    toast.update(toastToUpdate.id, {
-      icon: "lucide:circle-x",
-      title: `Error updating player's name to ${inputPlayerName.value}.`,
+    toast.add({
+      icon: ICONS.ERROR,
+      title: `Error updating player's username to ${playerNameInput.value}.`,
       description: `The error: ${(error as Error).message}`,
       color: "error",
-      duration: 5000,
+      duration: TOAST.DURATION.ERROR,
     });
+  } finally {
+    isSavingChanges.value = false;
   }
 };
+
+/* ------------------------- */
+/* Refreshing Username Logic */
+/* ------------------------- */
+const isRefreshingUsername = ref(false);
 const handlePlayerNameRefresh = async () => {
+  isRefreshingUsername.value = true;
+  
   try {
-    isRefreshingUsername.value = true;
+    const newUsername = await fetchPlayerUsername(props.osuId);
 
-    const response = await $fetch<string>("/api/player/refresh", {
-      method: "GET",
-      params: { osu_id: props.osuId },
-    });
-    console.log(response);
+    if (newUsername) {
+      playerNameInput.value = newUsername;
 
-    if (response) {
-      inputPlayerName.value = response;
+      toast.add({
+        icon: ICONS.SUCCESS,
+        title: `Successfully refreshed player's username to ${newUsername}!`,
+        color: "success",
+        duration: TOAST.DURATION.SUCCESS,
+      });
     }
   } catch (error) {
     console.error("Error refreshing player name:", error);
+
+    toast.add({
+      icon: ICONS.ERROR,
+      title: `Error refreshing player's username.`,
+      description: (error as Error).message,
+      color: "error",
+      duration: TOAST.DURATION.ERROR,
+    });
   } finally {
     isRefreshingUsername.value = false;
   }

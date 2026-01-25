@@ -1,6 +1,6 @@
 <template>
   <UModal title="Add a player to the website" v-model:open="isModalOpen" :close="false">
-    <UButton label="Add Player" class="ml-auto w-fit" />
+    <UButton label="Add Player" :icon="ICONS.BUTTONS.ADD" class="ml-auto w-fit" />
     <template #body>
       <div class="flex flex-col items-start gap-2">
         <span class="flex w-full flex-col gap-0.5">
@@ -19,7 +19,7 @@
             color="neutral"
             class="mt-4"
           />
-          <UButton @click="handlerCreatePlayer" label="Save" :loading="isLoading" class="mt-4" />
+          <UButton @click="handlerCreatePlayer" label="Save" :loading="isPlayerCreationInProgress" class="mt-4" />
         </span>
       </div>
     </template>
@@ -27,6 +27,9 @@
 </template>
 
 <script lang="ts" setup>
+import fetchPlayerUsername from "~/helpers/fetchPlayerUsername";
+import { TOAST } from "~/types/constants";
+import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
 // ------ Types ------
@@ -45,21 +48,13 @@ const createPlayerMutation = useConvexMutation(api.players.createPlayer);
 
 // ------ Reactive States ------
 const isModalOpen = ref(false);
-const isLoading = ref(false);
 const formState = ref<PlayerFormState>({ ...PLAYER_FORM_DEFAULT });
 
 // ------ Helpers ------
 const closeModal = () => {
   isModalOpen.value = false;
 };
-const fetchPlayerUsername = async (osuId: number) => {
-  return await $fetch("/api/player/refresh", {
-        method: "GET",
-        params: {
-          osu_id: osuId,
-        },
-      });
-}
+
 
 // ----- Watchers -----
 watch(
@@ -74,18 +69,20 @@ watch(
 /* ------------------- */
 /* Create Player Logic */
 /* ------------------- */
+const isPlayerCreationInProgress = ref(false);
 const handlerCreatePlayer = async () => {
   if (!formState.value.osu_id || formState.value.osu_id <= 0) {
     toast.add({
-      icon: "lucide:alert-circle",
+      icon: ICONS.WARNING,
       title: "Invalid Player ID",
       description: "Please enter a valid osu! Player ID greater than 0.",
       color: "warning",
+      duration: TOAST.DURATION.WARNING,
     });
     return;
   }
 
-  isLoading.value = true;
+  isPlayerCreationInProgress.value = true;
 
   try {
     let finalName = formState.value.name.trim();
@@ -100,9 +97,10 @@ const handlerCreatePlayer = async () => {
     });
 
     toast.add({
-      icon: "lucide:check-circle",
-      title: `Created the player ${finalName} successfully!`,
+      icon: ICONS.SUCCESS,
+      title: `Created ${finalName} successfully!`,
       color: "success",
+      duration: TOAST.DURATION.SUCCESS,
     });
 
     closeModal();
@@ -110,13 +108,14 @@ const handlerCreatePlayer = async () => {
     console.error("Error creating player:", error);
 
     toast.add({
-      icon: "lucide:alert-circle",
+      icon: ICONS.ERROR,
       title: "Error creating player",
       description: (error as Error).message || "An unexpected error occurred.",
       color: "error",
+      duration: TOAST.DURATION.ERROR,
     });
   } finally {
-    isLoading.value = false;
+    isPlayerCreationInProgress.value = false;
   }
 };
 </script>

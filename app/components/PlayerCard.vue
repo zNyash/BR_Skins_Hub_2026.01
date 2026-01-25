@@ -15,7 +15,7 @@
       <span class="ml-auto flex items-center gap-1">
         <UTooltip text="Refresh Username">
           <UButton
-            icon="lucide:refresh-ccw"
+            :icon="ICONS.BUTTONS.REFRESH"
             color="neutral"
             variant="ghost"
             @click="handlePlayerNameRefresh"
@@ -28,7 +28,7 @@
         <!-- Lógica de Confirmação de Deleção -->
         <UTooltip :text="confirmDelete ? 'Click again to confirm' : 'Delete Player'">
           <UButton
-            :icon="confirmDelete ? 'lucide:alert-triangle' : 'lucide:trash-2'"
+            :icon="confirmDelete ? ICONS.BUTTONS.WARNING : ICONS.BUTTONS.DELETE"
             @click="handleDeleteClick"
             variant="ghost"
             :color="confirmDelete ? 'warning' : 'error'"
@@ -42,6 +42,8 @@
 </template>
 
 <script lang="ts" setup>
+import { TOAST } from "~/types/constants";
+import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
@@ -83,10 +85,10 @@ const handlePlayerDelete = async () => {
     hasBeenDeleted.value = true;
 
     toast.add({
-      icon: "lucide:trash-2",
+      icon: ICONS.SUCCESS,
       title: `Deleted the player ${props.name}`,
       color: "success",
-      duration: 2000,
+      duration: TOAST.DURATION.SUCCESS,
     });
   } catch (error) {
     console.error("Error deleting player:", error);
@@ -94,10 +96,11 @@ const handlePlayerDelete = async () => {
     confirmDelete.value = false;
 
     toast.add({
-      icon: "lucide:circle-x",
+      icon: ICONS.ERROR,
       title: "Error deleting player",
       description: (error as Error).message,
       color: "error",
+      duration: TOAST.DURATION.ERROR,
     });
   }
 };
@@ -122,17 +125,19 @@ const handlePlayerNameRefresh = async () => {
     });
 
     toast.add({
+      icon: ICONS.SUCCESS,
       title: "Username updated!",
       color: "success",
-      duration: 1500,
+      duration: TOAST.DURATION.SUCCESS,
     });
   } catch (error) {
     console.error("Error refreshing player name:", error);
     toast.add({
-      icon: "lucide:alert-circle",
+      icon: ICONS.WARNING,
       title: "Failed to refresh name",
       description: "Could not connect to osu! API",
       color: "error",
+      duration: TOAST.DURATION.ERROR,
     });
   } finally {
     isRefreshingUsername.value = false;
