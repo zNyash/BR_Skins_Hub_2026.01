@@ -7,6 +7,7 @@ export default defineAppConfig({
     modal: {
       slots: {
         body: "sm:p-3",
+        header: "sm:p-3"
       },
       variants: {
         fullscreen: {
