@@ -2,6 +2,7 @@ const ICONS = {
     SUCCESS: "lucide:circle-check",
     ERROR: "lucide:circle-x",
     WARNING: "lucide:triangle-alert",
+    UPLOAD: "lucide:upload",
 
     BUTTONS: {
         CLOSE: "lucide:x",

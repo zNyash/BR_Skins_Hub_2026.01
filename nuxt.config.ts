@@ -10,7 +10,7 @@ export default defineNuxtConfig({
   },
 
   css: ["./app/assets/main.css"],
-  modules: ["convex-nuxt", "@nuxt/ui"],
+  modules: ["convex-nuxt", "@nuxt/ui", "@uploadthing/nuxt"],
   convex: {
     url: process.env.CONVEX_URL,
   },
