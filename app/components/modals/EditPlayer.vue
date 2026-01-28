@@ -1,6 +1,6 @@
 <template>
   <UModal title="Editing Player" :close="false" v-model:open="isModalOpen">
-    <UTooltip text="Edit Player">
+    <UTooltip text="Edit Player" :delay-duration="TOOLTIP.DELAY">
       <UButton icon="lucide:edit" variant="ghost" color="info" />
     </UTooltip>
     <template #body>
@@ -10,12 +10,17 @@
           <span class="flex w-full flex-col gap-0.5">
             <p class="text-muted text-xs">Player Username</p>
             <UFieldGroup>
-              <UInput placeholder="Name" v-model="playerNameInput" class="w-full" @keydown.enter="handleSaveChanges" />
+              <UInput
+                placeholder="Name"
+                v-model="playerNameInput"
+                class="w-full"
+                @keydown.enter="handleSaveChanges"
+              />
               <UButton
                 icon="lucide:refresh-ccw"
                 color="neutral"
                 variant="subtle"
-                @click="handlePlayerNameRefresh"
+                @click="handleRefreshClick"
                 :loading="isRefreshingUsername"
               />
             </UFieldGroup>
@@ -32,14 +37,12 @@
 </template>
 
 <script lang="ts" setup>
-import fetchPlayerUsername from "~/helpers/fetchPlayerUsername";
-import { TOAST } from "~/types/constants";
-import { ICONS } from "~/types/icons";
+import { TOOLTIP } from "~/types/constants";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
 const props = defineProps<{
-  playerId: Id<"players">;
+  _playerId: Id<"players">;
   playerName: string;
   osuId: number;
 }>();
@@ -49,7 +52,7 @@ const isModalOpen = ref(false);
 
 const playerNameInput = ref(props.playerName);
 
-const toast = useToast();
+const toast = useAppToast();
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 
 // ------ Watchers ------
@@ -82,66 +85,34 @@ const handleSaveChanges = async () => {
 
   try {
     await updatePlayerMutation.mutate({
-      id: props.playerId,
+      id: props._playerId,
       name: playerNameInput.value,
     });
 
-    toast.add({
-      icon: ICONS.SUCCESS,
+    toast.success({
       title: `Successfully updated player's username to ${playerNameInput.value}!`,
-      color: "success",
-      duration: TOAST.DURATION.SUCCESS,
     });
 
     closeModal();
   } catch (error) {
     console.error("Error updating player name:", error);
 
-    toast.add({
-      icon: ICONS.ERROR,
+    toast.error({
       title: `Error updating player's username to ${playerNameInput.value}.`,
       description: `The error: ${(error as Error).message}`,
-      color: "error",
-      duration: TOAST.DURATION.ERROR,
     });
   } finally {
     isSavingChanges.value = false;
   }
 };
 
-/* ------------------------- */
-/* Refreshing Username Logic */
-/* ------------------------- */
-const isRefreshingUsername = ref(false);
-const handlePlayerNameRefresh = async () => {
-  isRefreshingUsername.value = true;
-  
-  try {
-    const newUsername = await fetchPlayerUsername(props.osuId);
-
-    if (newUsername) {
-      playerNameInput.value = newUsername;
-
-      toast.add({
-        icon: ICONS.SUCCESS,
-        title: `Successfully refreshed player's username to ${newUsername}!`,
-        color: "success",
-        duration: TOAST.DURATION.SUCCESS,
-      });
-    }
-  } catch (error) {
-    console.error("Error refreshing player name:", error);
-
-    toast.add({
-      icon: ICONS.ERROR,
-      title: `Error refreshing player's username.`,
-      description: (error as Error).message,
-      color: "error",
-      duration: TOAST.DURATION.ERROR,
-    });
-  } finally {
-    isRefreshingUsername.value = false;
-  }
+const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
+const handleRefreshClick = async () => {
+  await refreshPlayerName({
+    osuId: props.osuId,
+    currentName: props.playerName,
+    playerId: props._playerId,
+  });
 };
 </script>
 

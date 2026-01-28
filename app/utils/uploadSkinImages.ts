@@ -7,15 +7,20 @@ const { uploadFiles } = genUploader<UploadRouter>();
  * Uploads skin images to UploadThing and returns their URLs.
  */
 export default async function uploadSkinImages(files: File[]) {
-  if (!files || files.length === 0) return [];
+  try {
+    if (!files || files.length === 0) return [];
 
-  const response = await uploadFiles("skinImages", {
-    files: files,
-  });
+    const response = await uploadFiles("skinImages", {
+      files: files,
+    });
 
-  if (!response) return [];
+    if (!response) return [];
 
-  const URLs = response.map((item) => item.ufsUrl);
+    const URLs = response.map((item) => item.ufsUrl);
 
-  return URLs;
+    return URLs;
+  } catch (error) {
+    console.error("Error uploading skin images:", error);
+    return [];
+  }
 }

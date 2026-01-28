@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
+import { action, mutation, query } from "./_generated/server";
 
 export const createSkin = mutation({
   args: {
@@ -34,5 +35,14 @@ export const updateSkin = mutation({
   handler: async (ctx, args) => {
     const { id, ...data } = args;
     await ctx.db.patch(id, data);
+  },
+});
+
+export const deleteSkin = mutation({
+  args: {
+    _id: v.id("skins"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args._id);
   },
 });

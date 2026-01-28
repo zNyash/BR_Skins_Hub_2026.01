@@ -1,8 +1,8 @@
 <template>
-  <div class="mx-auto flex max-w-md flex-col gap-4">
+  <div class="flex w-full max-w-2xl flex-col gap-4">
     <ModalsCreatePlayer />
 
-    <div class="flex flex-col gap-1.5">
+    <div class="grid w-full grid-cols-2 gap-1.5">
       <div
         v-if="playersLoading"
         class="bg-default absolute inset-0 flex w-full flex-col items-center justify-center gap-2"
@@ -18,9 +18,9 @@
           v-if="playersList"
           v-for="player in playersList"
           :key="player._id"
-          :_id="player._id"
-          :name="player.name"
-          :osu_id="player.osu_id"
+          :_playerId="player._id"
+          :playerName="player.name"
+          :osuId="player.osu_id"
         />
       </TransitionGroup>
     </div>

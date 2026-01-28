@@ -4,3 +4,15 @@
 @theme {
   --color-mantle: var(--color-zinc-950);
 }
+
+.popover-content {
+  @apply bg-accented flex size-full rounded px-3 py-1.5 text-sm select-none;
+  box-shadow: 0 0.5rem 1rem rgb(from var(--background-color-accented) r g b / 0.5);
+}
+.isHovering {
+  @apply border border-dashed border-transparent;
+
+  &[data-state="open"] {
+    @apply border-primary/25;
+  }
+}

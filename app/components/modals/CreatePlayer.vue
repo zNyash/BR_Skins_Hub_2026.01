@@ -19,7 +19,12 @@
             color="neutral"
             class="mt-4"
           />
-          <UButton @click="handlerCreatePlayer" label="Save" :loading="isPlayerCreationInProgress" class="mt-4" />
+          <UButton
+            @click="handlerCreatePlayer"
+            label="Save"
+            :loading="isPlayerCreationInProgress"
+            class="mt-4"
+          />
         </span>
       </div>
     </template>
@@ -27,8 +32,6 @@
 </template>
 
 <script lang="ts" setup>
-import fetchPlayerUsername from "~/helpers/fetchPlayerUsername";
-import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
@@ -43,7 +46,7 @@ const PLAYER_FORM_DEFAULT: PlayerFormState = {
 };
 
 // ------ Composables ------
-const toast = useToast();
+const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
 
 // ------ Reactive States ------
@@ -55,7 +58,6 @@ const closeModal = () => {
   isModalOpen.value = false;
 };
 
-
 // ----- Watchers -----
 watch(
   () => isModalOpen.value,
@@ -63,21 +65,19 @@ watch(
     if (!newVal) {
       formState.value = { ...PLAYER_FORM_DEFAULT };
     }
-  }
-)
+  },
+);
 
 /* ------------------- */
 /* Create Player Logic */
 /* ------------------- */
+const { fetchPlayerUsername } = usePlayerNameRefresh();
 const isPlayerCreationInProgress = ref(false);
 const handlerCreatePlayer = async () => {
   if (!formState.value.osu_id || formState.value.osu_id <= 0) {
-    toast.add({
-      icon: ICONS.WARNING,
+    toast.warning({
       title: "Invalid Player ID",
-      description: "Please enter a valid osu! Player ID greater than 0.",
-      color: "warning",
-      duration: TOAST.DURATION.WARNING,
+      description: "Please enter a valid osu! Player ID that is greater than 0.",
     });
     return;
   }
@@ -96,23 +96,17 @@ const handlerCreatePlayer = async () => {
       osu_id: formState.value.osu_id,
     });
 
-    toast.add({
-      icon: ICONS.SUCCESS,
-      title: `Created ${finalName} successfully!`,
-      color: "success",
-      duration: TOAST.DURATION.SUCCESS,
+    toast.success({
+      title: `Created player "${finalName}" successfully!`,
     });
 
     closeModal();
   } catch (error) {
     console.error("Error creating player:", error);
 
-    toast.add({
-      icon: ICONS.ERROR,
-      title: "Error creating player",
+    toast.error({
+      title: "Failed to create the player.",
       description: (error as Error).message || "An unexpected error occurred.",
-      color: "error",
-      duration: TOAST.DURATION.ERROR,
     });
   } finally {
     isPlayerCreationInProgress.value = false;
