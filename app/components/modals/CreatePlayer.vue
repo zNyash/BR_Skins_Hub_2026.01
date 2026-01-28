@@ -2,30 +2,16 @@
   <UModal title="Add a player to the website" v-model:open="isModalOpen" :close="false">
     <UButton label="Add Player" :icon="ICONS.BUTTONS.ADD" class="ml-auto w-fit" />
     <template #body>
-      <div class="flex flex-col items-start gap-2">
-        <span class="flex w-full flex-col gap-0.5">
-          <p class="text-muted text-xs">Player Username</p>
-          <UInput placeholder="Name" v-model="formState.name" />
-        </span>
-        <span class="flex w-full flex-col gap-0.5">
-          <p class="text-muted text-xs">Player ID from osu!</p>
-          <UInput type="number" :default-value="0" v-model="formState.osu_id" />
-        </span>
-        <span class="flex w-full flex-row justify-end gap-2">
-          <UButton
-            @click="closeModal"
-            label="Cancel"
-            variant="ghost"
-            color="neutral"
-            class="mt-4"
-          />
-          <UButton
-            @click="handlerCreatePlayer"
-            label="Save"
-            :loading="isPlayerCreationInProgress"
-            class="mt-4"
-          />
-        </span>
+      <div class="flex w-full flex-col gap-4">
+        <div class="flex w-full flex-col gap-2">
+          <NFormField label="Player Username">
+            <UInput placeholder="Name" v-model="formState.name" class="w-full" />
+          </NFormField>
+          <NFormField label="Player ID from osu!" required>
+            <UInput type="number" :default-value="0" v-model="formState.osu_id" class="w-full" />
+          </NFormField>
+        </div>
+        <NSaveCancel @save="handleCreatePlayer" @cancel="closeModal" :loading-text="loadingState" />
       </div>
     </template>
   </UModal>
@@ -72,25 +58,26 @@ watch(
 /* Create Player Logic */
 /* ------------------- */
 const { fetchPlayerUsername } = usePlayerNameRefresh();
-const isPlayerCreationInProgress = ref(false);
-const handlerCreatePlayer = async () => {
-  if (!formState.value.osu_id || formState.value.osu_id <= 0) {
-    toast.warning({
-      title: "Invalid Player ID",
-      description: "Please enter a valid osu! Player ID that is greater than 0.",
-    });
-    return;
-  }
-
-  isPlayerCreationInProgress.value = true;
-
+const loadingState = ref("");
+const handleCreatePlayer = async () => {
   try {
-    let finalName = formState.value.name.trim();
+    loadingState.value = "Checking changes...";
+    if (!formState.value.osu_id || formState.value.osu_id <= 0) {
+      toast.warning({
+        title: "Invalid Player ID",
+        description: "Please enter a valid osu! Player ID that is greater than 0.",
+      });
 
+      return;
+    }
+
+    let finalName = formState.value.name.trim();
     if (!finalName) {
+      loadingState.value = "Fetching player username...";
       finalName = await fetchPlayerUsername(formState.value.osu_id);
     }
 
+    loadingState.value = "Creating player...";
     await createPlayerMutation.mutate({
       name: finalName,
       osu_id: formState.value.osu_id,
@@ -109,7 +96,7 @@ const handlerCreatePlayer = async () => {
       description: (error as Error).message || "An unexpected error occurred.",
     });
   } finally {
-    isPlayerCreationInProgress.value = false;
+    loadingState.value = "";
   }
 };
 </script>

@@ -4,12 +4,11 @@
       <UButton icon="lucide:edit" variant="ghost" color="info" />
     </UTooltip>
     <template #body>
-      <span class="flex flex-col items-start gap-4">
+      <span class="flex w-full flex-col items-start gap-4">
         <!-- Inputs -->
         <div class="flex w-full flex-col items-start gap-2">
-          <span class="flex w-full flex-col gap-0.5">
-            <p class="text-muted text-xs">Player Username</p>
-            <UFieldGroup>
+          <NFormField label="Player Username" class="w-full">
+            <UFieldGroup class="w-full">
               <UInput
                 placeholder="Name"
                 v-model="playerNameInput"
@@ -24,13 +23,10 @@
                 :loading="isRefreshingUsername"
               />
             </UFieldGroup>
-          </span>
+          </NFormField>
         </div>
-        <!-- Buttons -->
-        <div class="flex w-full flex-row justify-end gap-2">
-          <UButton label="Cancel" color="neutral" variant="ghost" @click="closeModal" />
-          <UButton label="Save" @click="handleSaveChanges" :loading="isSavingChanges" />
-        </div>
+
+        <NSaveCancel @save="handleSaveChanges" @cancel="closeModal" :loading-text="loadingState" />
       </span>
     </template>
   </UModal>
@@ -41,18 +37,19 @@ import { TOOLTIP } from "~/types/constants";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
+// ------ Props ------
 const props = defineProps<{
   _playerId: Id<"players">;
   playerName: string;
   osuId: number;
 }>();
 
-// ------ Refs and Consts ------
+// ------ State ------
 const isModalOpen = ref(false);
-
 const playerNameInput = ref(props.playerName);
+const loadingState = ref("");
 
-const toast = useAppToast();
+// ------ Convex Mutations ------
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 
 // ------ Watchers ------
@@ -72,6 +69,7 @@ watch(
 );
 
 // ------ Helpers ------
+const toast = useAppToast();
 const closeModal = () => {
   isModalOpen.value = false;
 };
@@ -79,11 +77,9 @@ const closeModal = () => {
 /* -------------------- */
 /* Saving Changes Logic */
 /* -------------------- */
-const isSavingChanges = ref(false);
 const handleSaveChanges = async () => {
-  isSavingChanges.value = true;
-
   try {
+    loadingState.value = "Saving changes...";
     await updatePlayerMutation.mutate({
       id: props._playerId,
       name: playerNameInput.value,
@@ -102,17 +98,19 @@ const handleSaveChanges = async () => {
       description: `The error: ${(error as Error).message}`,
     });
   } finally {
-    isSavingChanges.value = false;
+    loadingState.value = "";
   }
 };
 
 const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
 const handleRefreshClick = async () => {
+  loadingState.value = "Refreshing username...";
   await refreshPlayerName({
     osuId: props.osuId,
     currentName: props.playerName,
     playerId: props._playerId,
   });
+  loadingState.value = "";
 };
 </script>
 

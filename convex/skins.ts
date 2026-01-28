@@ -26,15 +26,15 @@ export const listSkins = query({
 
 export const updateSkin = mutation({
   args: {
-    id: v.id("skins"),
+    _id: v.id("skins"),
     name: v.optional(v.string()),
     author: v.optional(v.string()),
     download_url: v.optional(v.string()),
     preview_images: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const { id, ...data } = args;
-    await ctx.db.patch(id, data);
+    const { _id, ...data } = args;
+    await ctx.db.patch(_id, data);
   },
 });
 

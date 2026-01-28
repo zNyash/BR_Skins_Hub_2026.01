@@ -3,38 +3,30 @@
     <UButton :icon="ICONS.BUTTONS.ADD">Add Skin</UButton>
 
     <template #body>
-      <div class="flex flex-col gap-2">
-        <span class="flex flex-col">
-          <p class="text-toned text-xs">Name<span class="text-error">*</span></p>
-          <UInput v-model="formState.name" required placeholder="Some skin name" />
-        </span>
-        <span class="flex flex-col">
-          <p class="text-toned text-xs">Author<span class="text-error">*</span></p>
-          <UInput v-model="formState.author" required placeholder="Author name" />
-        </span>
-        <span class="flex flex-col">
-          <p class="text-toned text-xs">Download URL<span class="text-error">*</span></p>
+      <div class="flex w-full flex-col gap-2">
+        <NFormField label="Name" required class="w-full">
+          <UInput v-model="formState.name" required placeholder="Some skin name" class="w-full" />
+        </NFormField>
+        <NFormField label="Author" required class="w-full">
+          <UInput v-model="formState.author" required placeholder="Author name" class="w-full" />
+        </NFormField>
+        <NFormField label="Download URL" required class="w-full">
           <UInput
             v-model="formState.download_url"
             required
             placeholder="https://example.com/skin-download"
+            class="w-full"
           />
-        </span>
-        <span class="flex flex-col">
-          <p class="text-toned mb-0.5 text-xs">Preview Images</p>
-          <ImageDropzone v-model="rawFiles" accept="image/png, image/jpeg" />
-          <p class="text-toned mt-1 ml-auto text-xs">{{ loadingText }}</p>
-        </span>
-        <span class="mt-2 flex w-full justify-end gap-2">
-          <UButton variant="soft" color="neutral" @click="handleCancel">Cancel</UButton>
-          <UButton
-            variant="solid"
-            color="primary"
-            @click="handleSkinCreation"
-            :loading="isUploadingSkin"
-            >Create Skin</UButton
-          >
-        </span>
+        </NFormField>
+        <NFormField label="Preview Images" required class="w-full">
+          <ImageDropzone v-model="rawFiles" accept="image/png, image/jpeg" class="w-full" />
+        </NFormField>
+
+        <NSaveCancel
+          :loading-text="loadingState"
+          @save="handleSkinCreation"
+          @cancel="handleCancel"
+        />
       </div>
     </template>
   </UModal>
@@ -60,19 +52,19 @@ const formState = ref({ ...getFormDefaults() });
 const rawFiles = ref<File[]>([]);
 const isModalOpen = ref(false);
 const isUploadingSkin = ref(false);
-const loadingText = ref("");
+const loadingState = ref("");
 
 // ------ Helpers ------
 const resetForm = () => {
   formState.value = { ...getFormDefaults() };
   rawFiles.value = [];
-  resetLoadingText();
+  resetLoadingState();
 };
 const closeModal = () => {
   isModalOpen.value = false;
 };
-const resetLoadingText = () => {
-  loadingText.value = "";
+const resetLoadingState = () => {
+  loadingState.value = "";
 };
 
 // ------ Watchers ------
@@ -90,27 +82,26 @@ const handleSkinCreation = async () => {
   try {
     isUploadingSkin.value = true;
 
-    loadingText.value = "Uploading Images";
+    loadingState.value = "Uploading Images...";
     const imageUrls = await uploadSkinImages(rawFiles.value);
 
-    loadingText.value = "Checking response";
+    loadingState.value = "Checking response...";
     if (imageUrls.length === 0) {
       toast.warning({
         title: "No preview images uploaded.",
         description: "Please upload at least one preview image for the skin.",
       });
 
-      resetLoadingText();
+      resetLoadingState();
       return;
     }
 
-    loadingText.value = "Creating Skin";
+    loadingState.value = "Creating Skin...";
     await createSkin({
       ...formState.value,
       preview_images: imageUrls,
     });
 
-    loadingText.value = "Skin Created";
     toast.success({
       title: `Created skin "${formState.value.name}" successfully!`,
     });
@@ -123,7 +114,7 @@ const handleSkinCreation = async () => {
       description: "An error occurred while creating the skin. Please try again.",
     });
   } finally {
-    isUploadingSkin.value = false;
+    loadingState.value = "";
   }
 };
 

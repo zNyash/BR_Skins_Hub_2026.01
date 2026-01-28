@@ -56,13 +56,14 @@
         </div>
       </div>
     </div>
+    <ModalsEditSkin :skin="skin" v-model:is-modal-open="isModalOpen" />
   </UContextMenu>
 </template>
 
 <script setup lang="ts">
 import type { ContextMenuItem } from "@nuxt/ui";
 import { formatTimeAgo } from "@vueuse/core";
-import { TOAST, TOOLTIP } from "~/types/constants";
+import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
@@ -80,6 +81,7 @@ const menuItems = ref<ContextMenuItem[]>([
     label: "Edit Skin",
     icon: ICONS.BUTTONS.EDIT,
     color: "info",
+    onSelect: handleEditSkin,
   },
   {
     label: "Delete Skin",
@@ -91,7 +93,12 @@ const menuItems = ref<ContextMenuItem[]>([
 
 // ------ State ------
 const isLoading = ref(false);
+const isModalOpen = ref(false);
 const toast = useToast();
+
+function handleEditSkin() {
+  isModalOpen.value = true;
+}
 
 const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
 async function handleSkinDeletion() {
