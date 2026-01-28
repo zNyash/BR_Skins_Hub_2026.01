@@ -30,6 +30,7 @@
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
 
+// ------ Composables ------
 const { data: playersList, isPending: playersLoading } = useConvexQuery(api.players.listPlayers);
 </script>
 

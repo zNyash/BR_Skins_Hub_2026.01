@@ -36,7 +36,7 @@
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
-// ------ Defaults ------
+// ------ Local Types & Defaults ------
 const getFormDefaults = () => ({
   name: "",
   author: "",
@@ -44,6 +44,7 @@ const getFormDefaults = () => ({
   preview_images: [""],
 });
 
+// ------ Composables ------
 const { mutate: createSkin } = useConvexMutation(api.skins.createSkin);
 const toast = useAppToast();
 
@@ -51,8 +52,17 @@ const toast = useAppToast();
 const formState = ref({ ...getFormDefaults() });
 const rawFiles = ref<File[]>([]);
 const isModalOpen = ref(false);
-const isUploadingSkin = ref(false);
 const loadingState = ref("");
+
+// ------ Watchers ------
+watch(
+  () => isModalOpen.value,
+  (newVal) => {
+    if (!newVal) {
+      resetForm();
+    }
+  },
+);
 
 // ------ Helpers ------
 const resetForm = () => {
@@ -66,22 +76,14 @@ const closeModal = () => {
 const resetLoadingState = () => {
   loadingState.value = "";
 };
+const handleCancel = () => {
+  closeModal();
+  resetForm();
+};
 
-// ------ Watchers ------
-watch(
-  () => isModalOpen.value,
-  (newVal) => {
-    if (!newVal) {
-      resetForm();
-    }
-  },
-);
-
-// ------ Handlers ------
+// ------ Methods ------
 const handleSkinCreation = async () => {
   try {
-    isUploadingSkin.value = true;
-
     loadingState.value = "Uploading Images...";
     const imageUrls = await uploadSkinImages(rawFiles.value);
 
@@ -116,11 +118,6 @@ const handleSkinCreation = async () => {
   } finally {
     loadingState.value = "";
   }
-};
-
-const handleCancel = () => {
-  closeModal();
-  resetForm();
 };
 </script>
 

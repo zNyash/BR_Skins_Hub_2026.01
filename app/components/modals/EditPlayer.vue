@@ -37,20 +37,22 @@ import { TOOLTIP } from "~/types/constants";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
-// ------ Props ------
+// ------ Props & Emits ------
 const props = defineProps<{
   _playerId: Id<"players">;
   playerName: string;
   osuId: number;
 }>();
 
+// ------ Composables ------
+const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
+const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
+const toast = useAppToast();
+
 // ------ State ------
 const isModalOpen = ref(false);
 const playerNameInput = ref(props.playerName);
 const loadingState = ref("");
-
-// ------ Convex Mutations ------
-const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 
 // ------ Watchers ------
 watch(
@@ -69,14 +71,11 @@ watch(
 );
 
 // ------ Helpers ------
-const toast = useAppToast();
 const closeModal = () => {
   isModalOpen.value = false;
 };
 
-/* -------------------- */
-/* Saving Changes Logic */
-/* -------------------- */
+// ------ Methods ------
 const handleSaveChanges = async () => {
   try {
     loadingState.value = "Saving changes...";
@@ -102,7 +101,6 @@ const handleSaveChanges = async () => {
   }
 };
 
-const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
 const handleRefreshClick = async () => {
   loadingState.value = "Refreshing username...";
   await refreshPlayerName({

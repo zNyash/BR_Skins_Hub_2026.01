@@ -21,44 +21,38 @@
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
-// ------ Types ------
-interface PlayerFormState {
-  name: string;
-  osu_id: number | undefined;
-}
-const PLAYER_FORM_DEFAULT: PlayerFormState = {
+// ------ Local Types & Defaults ------
+const getDefaultFormState = () => ({
   name: "",
   osu_id: undefined,
-};
+});
 
 // ------ Composables ------
 const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
+const { fetchPlayerUsername } = usePlayerNameRefresh();
 
-// ------ Reactive States ------
+// ------ State ------
 const isModalOpen = ref(false);
-const formState = ref<PlayerFormState>({ ...PLAYER_FORM_DEFAULT });
+const loadingState = ref("");
+const formState = ref({ ...getDefaultFormState() });
+
+// ------ Watchers ------
+watch(
+  () => isModalOpen.value,
+  (newVal) => {
+    if (!newVal) {
+      formState.value = { ...getDefaultFormState() };
+    }
+  },
+);
 
 // ------ Helpers ------
 const closeModal = () => {
   isModalOpen.value = false;
 };
 
-// ----- Watchers -----
-watch(
-  () => isModalOpen.value,
-  (newVal) => {
-    if (!newVal) {
-      formState.value = { ...PLAYER_FORM_DEFAULT };
-    }
-  },
-);
-
-/* ------------------- */
-/* Create Player Logic */
-/* ------------------- */
-const { fetchPlayerUsername } = usePlayerNameRefresh();
-const loadingState = ref("");
+// ------ Methods ------
 const handleCreatePlayer = async () => {
   try {
     loadingState.value = "Checking changes...";

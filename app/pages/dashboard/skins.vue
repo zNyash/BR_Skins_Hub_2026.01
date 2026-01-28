@@ -14,7 +14,7 @@
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
 
-// ------ Convex Queries & Mutations ------
+// ------ Composables ------
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
 </script>
 

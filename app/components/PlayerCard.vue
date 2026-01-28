@@ -25,7 +25,6 @@
 
         <ModalsEditPlayer :_playerId="_playerId" :player-name="playerName" :osu-id="osuId" />
 
-        <!-- Lógica de Confirmação de Deleção -->
         <UTooltip
           :text="confirmDelete ? 'Click again to confirm' : 'Delete Player'"
           :delay-duration="TOOLTIP.DELAY"
@@ -50,19 +49,24 @@ import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
+// ------ Props & Emits ------
 const props = defineProps<{
   playerName: string;
   osuId: number;
   _playerId: Id<"players">;
 }>();
 
+// ------ Composables ------
 const toast = useAppToast();
+const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
+const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
 
-/* --------------------------- */
-/* Deletion Confirmation Logic */
-/* --------------------------- */
+// ------ State ------
+const isDeleting = ref(false);
 const hasBeenDeleted = ref(false);
 const confirmDelete = ref(false);
+
+// ------ Methods ------
 const handleDeleteClick = () => {
   if (!confirmDelete.value) {
     confirmDelete.value = true;
@@ -74,11 +78,6 @@ const handleDeleteClick = () => {
   }
 };
 
-/* --------------------- */
-/* Player Deletion Logic */
-/* --------------------- */
-const isDeleting = ref(false);
-const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
 const handlePlayerDelete = async () => {
   try {
     isDeleting.value = true;
@@ -101,7 +100,6 @@ const handlePlayerDelete = async () => {
   }
 };
 
-const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
 const handleRefreshClick = async () => {
   await refreshPlayerName({
     osuId: props.osuId,

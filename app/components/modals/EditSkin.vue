@@ -19,26 +19,26 @@
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
 
-// ------ Types ------
+// ------ Local Types & Defaults ------
 type Skin = (typeof api.skins.listSkins._returnType)[0];
-
-// ------ Props ------
-const props = defineProps<{
-  skin: Skin;
-}>();
-
-// ------ State ------
 const getUpdatedFormData = () => ({
   name: props.skin.name,
   downloadUrl: props.skin.download_url,
 });
 
+// ------ Props & Emits ------
+const props = defineProps<{
+  skin: Skin;
+}>();
+
+// ------ Composables ------
+const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
+const toast = useAppToast();
+
+// ------ State ------
 const formdata = ref({ ...getUpdatedFormData() });
 const isModalOpen = defineModel<boolean>("isModalOpen", { required: true });
 const loadingState = ref("");
-
-// ------ Convex Mutations ------
-const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 
 // ------ Watchers ------
 watch(
@@ -55,9 +55,8 @@ const resetForm = () => {
 const closeModal = () => {
   isModalOpen.value = false;
 };
-const toast = useAppToast();
 
-// ------ Handlers ------
+// ------ Methods ------
 const onSave = async () => {
   try {
     loadingState.value = "Checking for changes...";
