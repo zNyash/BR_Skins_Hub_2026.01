@@ -44,7 +44,7 @@
           </UPopover>
 
           <UPopover mode="hover" :content="{ align: 'end' }">
-            <span class="text-muted ml-auto cursor-help text-xs select-none">
+            <span class="isHovering text-muted ml-auto cursor-help text-xs select-none">
               {{ formatTimeAgo(new Date(skin._creationTime)) }}
             </span>
             <template #content>
