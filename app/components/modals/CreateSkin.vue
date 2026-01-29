@@ -2,23 +2,25 @@
   <UModal title="Add New Skin" v-model:open="isOpen" :close="false">
     <template #body>
       <div class="flex w-full flex-col gap-2">
-        <NFormField label="Name" required class="w-full">
-          <UInput v-model="formState.name" required placeholder="Some skin name" class="w-full" />
-        </NFormField>
-        <NFormField label="Author" required class="w-full">
-          <UInput v-model="formState.author" required placeholder="Author name" class="w-full" />
-        </NFormField>
-        <NFormField label="Download URL" required class="w-full">
-          <UInput
-            v-model="formState.download_url"
-            required
-            placeholder="https://example.com/skin-download"
-            class="w-full"
-          />
-        </NFormField>
-        <NFormField label="Preview Images" required class="w-full">
-          <ImageDropzone v-model="rawFiles" accept="image/png, image/jpeg" class="w-full" />
-        </NFormField>
+        <span class="flex w-full flex-col gap-2" @keydown.enter="handleSkinCreation">
+          <NFormField label="Name" required class="w-full">
+            <UInput v-model="formState.name" required placeholder="Some skin name" class="w-full" />
+          </NFormField>
+          <NFormField label="Author" required class="w-full">
+            <UInput v-model="formState.author" required placeholder="Author name" class="w-full" />
+          </NFormField>
+          <NFormField label="Download URL" required class="w-full">
+            <UInput
+              v-model="formState.download_url"
+              required
+              placeholder="https://example.com/skin-download"
+              class="w-full"
+            />
+          </NFormField>
+          <NFormField label="Preview Images" required class="w-full">
+            <ImageDropzone v-model="rawFiles" accept="image/png, image/jpeg" class="w-full" />
+          </NFormField>
+        </span>
 
         <NSaveCancel
           :loading-text="statusMessage"

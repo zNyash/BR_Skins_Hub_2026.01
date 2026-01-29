@@ -2,7 +2,7 @@
   <UModal title="Add a player to the website" v-model:open="isOpen" :close="false">
     <template #body>
       <div class="flex w-full flex-col gap-4">
-        <div class="flex w-full flex-col gap-2">
+        <div class="flex w-full flex-col gap-2" @keydown.enter="handleCreatePlayer">
           <NFormField label="Player Username">
             <UInput placeholder="Name" v-model="formState.name" class="w-full" />
           </NFormField>
