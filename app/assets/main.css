@@ -13,6 +13,6 @@
   @apply border border-dashed border-transparent;
 
   &[data-state="open"] {
-    @apply border-primary/25;
+    @apply border-primary/50;
   }
 }

@@ -21,11 +21,12 @@
 
           <template #content>
             <span class="popover-content">
-              <p>{{ skin.name }}</p>
+              <p>{{ skin.name }} by {{ skin.author }}</p>
             </span>
           </template>
         </UPopover>
         <USeparator color="neutral" class="mt-1 mb-2 brightness-150" />
+
         <!-- Extra Info -->
         <div class="flex">
           <UPopover mode="hover" :content="{ align: 'start' }">
@@ -49,7 +50,7 @@
             </span>
             <template #content>
               <span class="popover-content">
-                <p>{{ formatTimeAgo(new Date(skin._creationTime)) }}</p>
+                <p>{{ new Date(skin._creationTime).toLocaleString() }}</p>
               </span>
             </template>
           </UPopover>
