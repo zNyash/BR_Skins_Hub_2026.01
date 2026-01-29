@@ -1,9 +1,9 @@
 // ------ Local Types & Defaults ------
 // ------ Props & Emits ------
-// ------ Composables ------
-// ------ State ------
+// ------ External Composables ------
+// ------ Local State ------
 // ------ Computed ------
 // ------ Watchers ------
-// ------ Helpers ------
-// ------ Methods ------
+// ------ Actions ------
+// ------ Handlers ------
 // ------ Lifecycle ------

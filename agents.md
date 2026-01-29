@@ -80,6 +80,168 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
 
 ---
 
+## Script Setup Organization Cheat Sheet (Vue 3 / Nuxt 3)
+
+When generating or refactoring Vue 3 components using `<script setup>`, **ALWAYS organize the code following the section order and responsibilities below**.
+
+Each section has **one single purpose**.  
+Do NOT mix responsibilities between sections.
+
+---
+
+### // ------ Local Types & Defaults ------
+
+**Purpose:**  
+Declare **types, interfaces, enums, and default values** that are **local to the component**.
+
+**Rules:**
+
+- Types defined here MUST NOT be reused outside this component.
+- Default objects or constants tightly coupled to the component belong here.
+- Do NOT place runtime logic or reactive state here.
+
+**Examples:**
+
+- `type LocalFormState`
+- `interface UploadOptions`
+- `const DEFAULT_STATUS = "idle"`
+
+---
+
+### // ------ Props & Emits ------
+
+**Purpose:**  
+Define the **public API** of the component.
+
+**Rules:**
+
+- Only `defineProps`, `defineEmits`, and `defineModel` are allowed here.
+- No logic, no derived values, no side effects.
+- Props typing must be explicit.
+
+---
+
+### // ------ External Composables ------
+
+**Purpose:**  
+Initialize **external dependencies and composables**.
+
+**Rules:**
+
+- Only composables imported from outside the component.
+- Includes: `useRoute`, `useAppToast`, `useConvexMutation`, `useResettableRef`, `useSubmitAction`, etc.
+- Do NOT define local refs or computed values here.
+- If a composable exposes state, it is still initialized here.
+
+---
+
+### // ------ Local State ------
+
+**Purpose:**  
+Declare the component’s **reactive source of truth**.
+
+**Rules:**
+
+- Only `ref`, `reactive`, or `shallowRef`.
+- No derived values.
+- No side effects.
+- This section defines _what the component knows_, not _what it does_.
+
+---
+
+### // ------ Computed ------
+
+**Purpose:**  
+Declare **derived state** based on local state, props, or composables.
+
+**Rules:**
+
+- ONLY `computed`.
+- Must be deterministic and side-effect free.
+- Must NOT mutate state.
+- If logic becomes complex, extract it to a helper or composable.
+
+---
+
+### // ------ Watchers ------
+
+**Purpose:**  
+React to **state changes**.
+
+**Rules:**
+
+- Only `watch` or `watchEffect`.
+- No reusable logic should live here.
+- Side effects triggered by reactive changes belong here.
+- Do NOT use watchers as a replacement for computed.
+
+---
+
+### // ------ Actions ------
+
+**Purpose:**  
+Define **intentional operations** that **mutate state and/or trigger side effects**.
+
+**Rules:**
+
+- Actions MAY:
+  - mutate refs
+  - call composables
+  - perform async operations
+- Actions represent _what the component does_, not event wiring.
+- Actions are NOT pure functions.
+
+**Examples:**
+
+- `resetAll`
+- `submitForm`
+- `deleteItem`
+- `closeModal`
+
+---
+
+### // ------ Handlers ------
+
+**Purpose:**  
+Bind **events to actions**.
+
+**Rules:**
+
+- Handlers are thin wrappers.
+- They typically call one or more Actions.
+- Prefer naming with `handleX`.
+
+**Examples:**
+
+- `handleSubmit`
+- `handleClick`
+- `handleDrop`
+
+---
+
+### // ------ Lifecycle ------
+
+**Purpose:**  
+Register lifecycle hooks.
+
+**Rules:**
+
+- Only Vue lifecycle hooks (`onMounted`, `onUnmounted`, etc).
+- No logic definition here — only orchestration.
+- Heavy logic must be delegated to Actions.
+
+---
+
+### General Rules
+
+- Do NOT reorder sections.
+- Do NOT skip sections if relevant.
+- Do NOT mix responsibilities.
+- If unsure where code belongs, ask:
+  **"Is this state, derivation, reaction, or action?"**
+
+---
+
 ## 📝 Git & Commit Guidelines
 
 - **Commit Suggestions**: When asked for a commit message suggestion:
