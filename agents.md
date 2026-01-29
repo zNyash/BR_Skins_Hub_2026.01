@@ -52,6 +52,7 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
 - Use the `useSubmitAction` composable for consistent error handling and toast notifications.
 - **CRITICAL**: You must explicitly allow the developer to set specific status messages during the process. Do not abstract this away.
 - **Pattern**:
+
   ```typescript
   const { handleSubmit, statusMessage } = useSubmitAction();
 
@@ -76,3 +77,14 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
 - **Don't** create "Trigger Buttons" inside Modal components.
 - **Don't** catch errors inside components without updating a loading state or showing a toast (use `useSubmitAction` to handle this automatically).
 - **Don't** remove the explicit `statusMessage.value = ...` updates when refactoring. These are required for UX.
+
+---
+
+## 📝 Git & Commit Guidelines
+
+- **Commit Suggestions**: When asked for a commit message suggestion:
+  1.  Analyze the changes made.
+  2.  Provide **ONLY** the markdown text of the commit message (subject and body).
+  3.  **DO NOT** execute the commit.
+  4.  **DO NOT** generate a terminal command (like `git commit -m ...`).
+  5.  Wait for the user to review and manually commit.
