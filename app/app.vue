@@ -14,6 +14,7 @@
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+// ------ Local State ------
 const menuItems = ref<NavigationMenuItem[]>([
   {
     label: "Home",

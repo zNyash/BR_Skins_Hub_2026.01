@@ -37,10 +37,10 @@
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
-// ------ Composables ------
+// ------ External Composables ------
 const { data: playersList, isPending: playersLoading } = useConvexQuery(api.players.listPlayers);
 
-// ------ State ------
+// ------ Local State ------
 const isCreatePlayerOpen = ref(false);
 </script>
 

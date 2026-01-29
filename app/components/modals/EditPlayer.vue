@@ -58,15 +58,15 @@ const props = defineProps<{
   playerName: string;
   osuId: number;
 }>();
+const isOpen = defineModel<boolean>("open", { required: true });
 
-// ------ Composables ------
+// ------ External Composables ------
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
 const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
-// ------ Queries ------
 const { data: allSkins } = useConvexQuery(api.skins.listSkins, {});
 const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery(
   api.playerSkins.getSkinsByPlayer,
@@ -75,6 +75,11 @@ const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery
   },
 );
 
+// ------ Local State ------
+const playerNameInput = ref(props.playerName);
+const selectedSkinsIds = ref<Id<"skins">[]>([]);
+
+// ------ Computed ------
 const formattedSkins = computed(() => {
   return (
     allSkins.value?.map(
@@ -91,11 +96,6 @@ const formattedSkins = computed(() => {
     ) ?? []
   );
 });
-
-// ------ State ------
-const isOpen = defineModel<boolean>("open", { required: true });
-const playerNameInput = ref(props.playerName);
-const selectedSkinsIds = ref<Id<"skins">[]>([]);
 
 // ------ Watchers ------
 watch(
@@ -127,12 +127,21 @@ watch(
   },
 );
 
-// ------ Helpers ------
+// ------ Actions ------
 const closeModal = () => {
   isOpen.value = false;
 };
 
-// ------ Methods ------
+// ------ Handlers ------
+const handleRefreshClick = async () => {
+  // refreshPlayerName handles its own loading state and toasts
+  await refreshPlayerName({
+    osuId: props.osuId,
+    currentUsername: props.playerName,
+    playerId: props._playerId,
+  });
+};
+
 const handleSaveChanges = () =>
   handleSubmit(
     async () => {
@@ -199,15 +208,6 @@ const handleSaveChanges = () =>
       errorTitle: `Error updating player.`,
     },
   );
-
-const handleRefreshClick = async () => {
-  // refreshPlayerName handles its own loading state and toasts
-  await refreshPlayerName({
-    osuId: props.osuId,
-    currentUsername: props.playerName,
-    playerId: props._playerId,
-  });
-};
 </script>
 
 <style></style>

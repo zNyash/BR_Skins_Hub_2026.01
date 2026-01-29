@@ -9,6 +9,7 @@
 </template>
 
 <script lang="ts" setup>
+// ------ Props & Emits ------
 defineProps<{
   loadingText?: string;
 }>();

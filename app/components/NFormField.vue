@@ -6,6 +6,7 @@
 </template>
 
 <script lang="ts" setup>
+// ------ Props & Emits ------
 defineProps<{
   label?: string;
   required?: boolean;

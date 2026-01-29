@@ -29,15 +29,17 @@ const getDefaultFormState = () => ({
   osu_id: undefined,
 });
 
-// ------ Composables ------
+// ------ Props & Emits ------
+const isOpen = defineModel<boolean>("open", { required: true });
+
+// ------ External Composables ------
 const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
 const { fetchPlayerUsername } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
-
-// ------ State ------
 const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
-const isOpen = defineModel<boolean>("open", { required: true });
+
+// ------ Local State ------
 
 // ------ Watchers ------
 watch(
@@ -49,7 +51,7 @@ watch(
   },
 );
 
-// ------ Helpers ------
+// ------ Actions ------
 const resetAll = () => {
   resetForm();
   statusMessage.value = "";
@@ -58,7 +60,7 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
-// ------ Methods ------
+// ------ Handlers ------
 const handleCreatePlayer = () =>
   handleSubmit(
     async () => {

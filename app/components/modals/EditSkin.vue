@@ -22,24 +22,25 @@ import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
 type Skin = Doc<"skins">;
-const getUpdatedFormData = () => ({
-  name: props.skin.name,
-  downloadUrl: props.skin.download_url,
-});
 
 // ------ Props & Emits ------
 const props = defineProps<{
   skin: Skin;
 }>();
+const isOpen = defineModel<boolean>("open", { required: true });
 
-// ------ Composables ------
+// ------ External Composables ------
 const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
-// ------ State ------
+const getUpdatedFormData = () => ({
+  name: props.skin.name,
+  downloadUrl: props.skin.download_url,
+});
 const { state: formdata, reset: resetForm } = useResettableRef(getUpdatedFormData);
-const isOpen = defineModel<boolean>("open", { required: true });
+
+// ------ Local State ------
 
 // ------ Watchers ------
 watch(
@@ -52,12 +53,12 @@ watch(
   },
 );
 
-// ------ Helpers ------
+// ------ Actions ------
 const closeModal = () => {
   isOpen.value = false;
 };
 
-// ------ Methods ------
+// ------ Handlers ------
 const onSave = () =>
   handleSubmit(
     async () => {

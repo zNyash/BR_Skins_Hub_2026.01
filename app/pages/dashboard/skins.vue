@@ -16,10 +16,10 @@
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
-// ------ Composables ------
+// ------ External Composables ------
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
 
-// ------ State ------
+// ------ Local State ------
 const isCreateSkinOpen = ref(false);
 </script>
 

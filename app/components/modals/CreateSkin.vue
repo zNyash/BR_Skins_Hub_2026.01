@@ -43,15 +43,17 @@ const getFormDefaults = () => ({
   preview_images: [""],
 });
 
-// ------ Composables ------
+// ------ Props & Emits ------
+const isOpen = defineModel<boolean>("open", { required: true });
+
+// ------ External Composables ------
 const { mutate: createSkin } = useConvexMutation(api.skins.createSkin);
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
-
-// ------ State ------
 const { state: formState, reset: resetForm } = useResettableRef(getFormDefaults);
+
+// ------ Local State ------
 const rawFiles = ref<File[]>([]);
-const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ Watchers ------
 watch(
@@ -63,7 +65,7 @@ watch(
   },
 );
 
-// ------ Helpers ------
+// ------ Actions ------
 const resetAll = () => {
   resetForm();
   rawFiles.value = [];
@@ -73,7 +75,7 @@ const closeModal = () => {
   isOpen.value = false;
 };
 
-// ------ Methods ------
+// ------ Handlers ------
 const handleSkinCreation = () =>
   handleSubmit(
     async () => {

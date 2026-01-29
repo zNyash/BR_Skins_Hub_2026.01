@@ -69,41 +69,43 @@ import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import type { Doc } from "~~/convex/_generated/dataModel";
 
-// ------ Types ------
+// ------ Local Types & Defaults ------
 type Skin = Doc<"skins">;
 
-// ----- Props ------
+// ------ Props & Emits ------
 const props = defineProps<{
   skin: Skin;
 }>();
 
-// ------ Context Menu Items ------
+// ------ External Composables ------
+const toast = useToast();
+const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
+
+// ------ Local State ------
+const isLoading = ref(false);
+const isModalOpen = ref(false);
+
 const menuItems = ref<ContextMenuItem[]>([
   {
     label: "Edit Skin",
     icon: ICONS.BUTTONS.EDIT,
     color: "info",
-    onSelect: handleEditSkin,
+    onSelect: openEditModal,
   },
   {
     label: "Delete Skin",
     icon: ICONS.BUTTONS.DELETE,
     color: "error",
-    onSelect: handleSkinDeletion,
+    onSelect: processSkinDeletion,
   },
 ]);
 
-// ------ State ------
-const isLoading = ref(false);
-const isModalOpen = ref(false);
-const toast = useToast();
-
-function handleEditSkin() {
+// ------ Actions ------
+function openEditModal() {
   isModalOpen.value = true;
 }
 
-const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
-async function handleSkinDeletion() {
+async function processSkinDeletion() {
   try {
     isLoading.value = true;
 

@@ -80,7 +80,7 @@
 <script lang="ts" setup>
 import { ICONS } from "~/types/icons";
 
-// ------ Types ------
+// ------ Local Types & Defaults ------
 interface Props {
   modelValue: File[];
   accept?: string;
@@ -95,11 +95,12 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: File[]): void;
 }>();
 
-// ------ State & Computed ------
+// ------ External Composables ------
 const { isDraggingOver, activeState, resetState } = useDragDropState();
 const { getPreviewUrl, clearPreview } = useImagePreviews();
 const { getFileKey, formatFileSize } = useFileHelpers();
 
+// ------ Computed ------
 const acceptedImageTypeLabel = computed(() =>
   props.accept
     ? props.accept
@@ -110,7 +111,7 @@ const acceptedImageTypeLabel = computed(() =>
     : "Images",
 );
 
-// ------ Methods ------
+// ------ Actions ------
 const appendSelectedFiles = (files: File[]) => {
   if (files.length === 0) return;
 
@@ -118,7 +119,16 @@ const appendSelectedFiles = (files: File[]) => {
   emit("update:modelValue", updatedFiles);
 };
 
-// ------ Event Handlers ------
+const removeFileAt = (index: number) => {
+  const fileToRemove = props.modelValue[index];
+  if (fileToRemove) clearPreview(fileToRemove);
+
+  const newFiles = [...props.modelValue];
+  newFiles.splice(index, 1);
+  emit("update:modelValue", newFiles);
+};
+
+// ------ Handlers ------
 const handleImageDrop = (event: DragEvent) => {
   resetState();
   const droppedFiles = event.dataTransfer?.files;
@@ -133,15 +143,6 @@ const handleFileSelection = (event: Event) => {
 
   appendSelectedFiles(Array.from(input.files));
   input.value = "";
-};
-
-const removeFileAt = (index: number) => {
-  const fileToRemove = props.modelValue[index];
-  if (fileToRemove) clearPreview(fileToRemove);
-
-  const newFiles = [...props.modelValue];
-  newFiles.splice(index, 1);
-  emit("update:modelValue", newFiles);
 };
 </script>
 

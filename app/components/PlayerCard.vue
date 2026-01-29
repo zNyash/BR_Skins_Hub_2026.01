@@ -64,30 +64,19 @@ const props = defineProps<{
   _playerId: Id<"players">;
 }>();
 
-// ------ Composables ------
+// ------ External Composables ------
 const toast = useAppToast();
 const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
 const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
 
-// ------ State ------
+// ------ Local State ------
 const isDeleting = ref(false);
 const isEditing = ref(false);
 const hasBeenDeleted = ref(false);
 const confirmDelete = ref(false);
 
-// ------ Methods ------
-const handleDeleteClick = () => {
-  if (!confirmDelete.value) {
-    confirmDelete.value = true;
-    setTimeout(() => {
-      confirmDelete.value = false;
-    }, 3000);
-  } else {
-    handlePlayerDelete();
-  }
-};
-
-const handlePlayerDelete = async () => {
+// ------ Actions ------
+const performPlayerDelete = async () => {
   try {
     isDeleting.value = true;
     await deletePlayerMutation.mutate({ player_id: props._playerId });
@@ -106,6 +95,18 @@ const handlePlayerDelete = async () => {
       title: "Failed to delete the player.",
       description: (error as Error).message,
     });
+  }
+};
+
+// ------ Handlers ------
+const handleDeleteClick = () => {
+  if (!confirmDelete.value) {
+    confirmDelete.value = true;
+    setTimeout(() => {
+      confirmDelete.value = false;
+    }, 3000);
+  } else {
+    performPlayerDelete();
   }
 };
 

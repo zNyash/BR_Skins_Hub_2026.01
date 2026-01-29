@@ -57,12 +57,15 @@
 </template>
 
 <script lang="ts" setup>
+// ------ Props & Emits ------
 const props = defineProps<{
   images: string[];
 }>();
 
+// ------ Local State ------
 const currentIndex = ref(0);
 
+// ------ Actions ------
 const nextImage = () => {
   if (currentIndex.value < props.images.length - 1) {
     currentIndex.value++;
