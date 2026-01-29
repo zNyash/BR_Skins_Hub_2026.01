@@ -18,9 +18,10 @@
 
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
+import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
-type Skin = (typeof api.skins.listSkins._returnType)[0];
+type Skin = Doc<"skins">;
 const getUpdatedFormData = () => ({
   name: props.skin.name,
   downloadUrl: props.skin.download_url,

@@ -66,9 +66,10 @@ import { formatTimeAgo } from "@vueuse/core";
 import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
+import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Types ------
-type Skin = (typeof api.skins.listSkins._returnType)[0];
+type Skin = Doc<"skins">;
 
 // ----- Props ------
 const props = defineProps<{

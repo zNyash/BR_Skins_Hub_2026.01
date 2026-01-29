@@ -78,7 +78,16 @@ const closeModal = () => {
 // ------ Methods ------
 const handleSaveChanges = async () => {
   try {
-    loadingState.value = "Saving changes...";
+    loadingState.value = "Checking changes...";
+    if (playerNameInput.value.trim() === props.playerName) {
+      toast.success({
+        title: "No changes were made to the player.",
+      });
+      closeModal();
+      return;
+    }
+
+    loadingState.value = "Updating player...";
     await updatePlayerMutation.mutate({
       id: props._playerId,
       name: playerNameInput.value,
@@ -105,7 +114,7 @@ const handleRefreshClick = async () => {
   loadingState.value = "Refreshing username...";
   await refreshPlayerName({
     osuId: props.osuId,
-    currentName: props.playerName,
+    currentUsername: props.playerName,
     playerId: props._playerId,
   });
   loadingState.value = "";

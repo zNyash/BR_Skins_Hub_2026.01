@@ -1,37 +1,51 @@
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
+interface RefreshPayload {
+  osuId: number;
+  currentUsername: string;
+  playerId: Id<"players">;
+}
+
 export const usePlayerNameRefresh = () => {
   const toast = useAppToast();
   const { mutate: updatePlayer } = useConvexMutation(api.players.updatePlayer);
 
   const isLoading = ref(false);
 
-  const refreshPlayerName = async (payload: PayLoad) => {
+  const fetchPlayerUsername = async (osuId: number) => {
+    return await $fetch<string>("/api/player/refresh", {
+      method: "GET",
+      params: {
+        osu_id: osuId,
+      },
+    });
+  };
+
+  const refreshPlayerName = async ({ osuId, currentUsername, playerId }: RefreshPayload) => {
     try {
       isLoading.value = true;
 
-      const oldUsername = payload.currentName;
-      const newUsername = await fetchPlayerUsername(payload.osuId);
+      const newUsername = await fetchPlayerUsername(osuId);
 
       // Only change the name on the database if it's different.
-      if (newUsername === oldUsername) {
+      if (newUsername === currentUsername) {
         toast.success({
           title: "Username is up to date!",
-          description: `No changes detected for "${oldUsername}".`,
+          description: `No changes detected for "${currentUsername}".`,
         });
 
         return true;
       }
 
       await updatePlayer({
-        id: payload.playerId,
+        id: playerId,
         name: newUsername,
       });
 
       toast.success({
         title: "Username updated!",
-        description: `Changed from "${oldUsername}" to "${newUsername}"!`,
+        description: `Changed from "${currentUsername}" to "${newUsername}"!`,
       });
 
       return true;
@@ -49,25 +63,9 @@ export const usePlayerNameRefresh = () => {
     }
   };
 
-  const fetchPlayerUsername = async (osuId: number) => {
-    const newName = await $fetch("/api/player/refresh", {
-      method: "GET",
-      params: {
-        osu_id: osuId,
-      },
-    });
-    return newName;
-  };
-
   return {
-    isLoading,
+    isLoading: readonly(isLoading),
     refreshPlayerName,
     fetchPlayerUsername,
   };
-};
-
-type PayLoad = {
-  osuId: number;
-  currentName: string;
-  playerId: Id<"players">;
 };

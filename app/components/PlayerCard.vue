@@ -103,7 +103,7 @@ const handlePlayerDelete = async () => {
 const handleRefreshClick = async () => {
   await refreshPlayerName({
     osuId: props.osuId,
-    currentName: props.playerName,
+    currentUsername: props.playerName,
     playerId: props._playerId,
   });
 };
