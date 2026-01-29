@@ -1,7 +1,5 @@
 <template>
-  <UModal title="Add New Skin" v-model:open="isModalOpen" :close="false">
-    <UButton :icon="ICONS.BUTTONS.ADD">Add Skin</UButton>
-
+  <UModal title="Add New Skin" v-model:open="isOpen" :close="false">
     <template #body>
       <div class="flex w-full flex-col gap-2">
         <NFormField label="Name" required class="w-full">
@@ -23,9 +21,9 @@
         </NFormField>
 
         <NSaveCancel
-          :loading-text="loadingState"
+          :loading-text="statusMessage"
           @save="handleSkinCreation"
-          @cancel="handleCancel"
+          @cancel="closeModal"
         />
       </div>
     </template>
@@ -33,7 +31,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
 // ------ Local Types & Defaults ------
@@ -46,79 +43,66 @@ const getFormDefaults = () => ({
 
 // ------ Composables ------
 const { mutate: createSkin } = useConvexMutation(api.skins.createSkin);
+const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
 // ------ State ------
-const formState = ref({ ...getFormDefaults() });
+const { state: formState, reset: resetForm } = useResettableRef(getFormDefaults);
 const rawFiles = ref<File[]>([]);
-const isModalOpen = ref(false);
-const loadingState = ref("");
+const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ Watchers ------
 watch(
-  () => isModalOpen.value,
+  () => isOpen.value,
   (newVal) => {
     if (!newVal) {
-      resetForm();
+      resetAll();
     }
   },
 );
 
 // ------ Helpers ------
-const resetForm = () => {
-  formState.value = { ...getFormDefaults() };
+const resetAll = () => {
+  resetForm();
   rawFiles.value = [];
-  resetLoadingState();
+  statusMessage.value = "";
 };
 const closeModal = () => {
-  isModalOpen.value = false;
-};
-const resetLoadingState = () => {
-  loadingState.value = "";
-};
-const handleCancel = () => {
-  closeModal();
-  resetForm();
+  isOpen.value = false;
 };
 
 // ------ Methods ------
-const handleSkinCreation = async () => {
-  try {
-    loadingState.value = "Uploading Images...";
-    const imageUrls = await uploadSkinImages(rawFiles.value);
+const handleSkinCreation = () =>
+  handleSubmit(
+    async () => {
+      statusMessage.value = "Uploading Images...";
+      const imageUrls = await uploadSkinImages(rawFiles.value);
 
-    loadingState.value = "Checking response...";
-    if (imageUrls.length === 0) {
-      toast.warning({
-        title: "No preview images uploaded.",
-        description: "Please upload at least one preview image for the skin.",
+      statusMessage.value = "Checking response...";
+      if (imageUrls.length === 0) {
+        toast.warning({
+          title: "No preview images uploaded.",
+          description: "Please upload at least one preview image for the skin.",
+        });
+        return false;
+      }
+
+      statusMessage.value = "Creating Skin...";
+      await createSkin({
+        ...formState.value,
+        preview_images: imageUrls,
       });
 
-      resetLoadingState();
-      return;
-    }
-
-    loadingState.value = "Creating Skin...";
-    await createSkin({
-      ...formState.value,
-      preview_images: imageUrls,
-    });
-
-    toast.success({
-      title: `Created skin "${formState.value.name}" successfully!`,
-    });
-    resetForm();
-    closeModal();
-  } catch (error) {
-    console.error("Error creating skin:", error);
-    toast.error({
-      title: "Error creating skin.",
-      description: "An error occurred while creating the skin. Please try again.",
-    });
-  } finally {
-    loadingState.value = "";
-  }
-};
+      toast.success({
+        title: `Created skin "${formState.value.name}" successfully!`,
+      });
+      resetAll();
+      closeModal();
+    },
+    {
+      errorTitle: "Error creating skin.",
+    },
+  );
 </script>
 
 <style></style>

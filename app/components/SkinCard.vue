@@ -56,7 +56,7 @@
         </div>
       </div>
     </div>
-    <ModalsEditSkin :skin="skin" v-model:is-modal-open="isModalOpen" />
+    <ModalsEditSkin :skin="skin" v-model:open="isModalOpen" />
   </UContextMenu>
 </template>
 

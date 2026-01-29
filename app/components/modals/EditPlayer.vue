@@ -1,8 +1,5 @@
 <template>
-  <UModal title="Editing Player" :close="false" v-model:open="isModalOpen">
-    <UTooltip text="Edit Player" :delay-duration="TOOLTIP.DELAY">
-      <UButton icon="lucide:edit" variant="ghost" color="info" />
-    </UTooltip>
+  <UModal title="Editing Player" :close="false" v-model:open="isOpen">
     <template #body>
       <span class="flex w-full flex-col items-start gap-4">
         <!-- Inputs -->
@@ -26,14 +23,13 @@
           </NFormField>
         </div>
 
-        <NSaveCancel @save="handleSaveChanges" @cancel="closeModal" :loading-text="loadingState" />
+        <NSaveCancel @save="handleSaveChanges" @cancel="closeModal" :loading-text="statusMessage" />
       </span>
     </template>
   </UModal>
 </template>
 
 <script lang="ts" setup>
-import { TOOLTIP } from "~/types/constants";
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
@@ -47,12 +43,12 @@ const props = defineProps<{
 // ------ Composables ------
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
+const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
 // ------ State ------
-const isModalOpen = ref(false);
+const isOpen = defineModel<boolean>("open", { required: true });
 const playerNameInput = ref(props.playerName);
-const loadingState = ref("");
 
 // ------ Watchers ------
 watch(
@@ -62,62 +58,57 @@ watch(
   },
 );
 watch(
-  () => isModalOpen.value,
+  () => isOpen.value,
   (newVal) => {
     if (!newVal) {
       playerNameInput.value = props.playerName;
+      statusMessage.value = "";
     }
   },
 );
 
 // ------ Helpers ------
 const closeModal = () => {
-  isModalOpen.value = false;
+  isOpen.value = false;
 };
 
 // ------ Methods ------
-const handleSaveChanges = async () => {
-  try {
-    loadingState.value = "Checking changes...";
-    if (playerNameInput.value.trim() === props.playerName) {
-      toast.success({
-        title: "No changes were made to the player.",
+const handleSaveChanges = () =>
+  handleSubmit(
+    async () => {
+      statusMessage.value = "Checking changes...";
+      if (playerNameInput.value.trim() === props.playerName) {
+        toast.success({
+          title: "No changes were made to the player.",
+        });
+        closeModal();
+        return false;
+      }
+
+      statusMessage.value = "Updating player...";
+      await updatePlayerMutation.mutate({
+        id: props._playerId,
+        name: playerNameInput.value,
       });
+
+      toast.success({
+        title: `Successfully updated player's username to ${playerNameInput.value}!`,
+      });
+
       closeModal();
-      return;
-    }
-
-    loadingState.value = "Updating player...";
-    await updatePlayerMutation.mutate({
-      id: props._playerId,
-      name: playerNameInput.value,
-    });
-
-    toast.success({
-      title: `Successfully updated player's username to ${playerNameInput.value}!`,
-    });
-
-    closeModal();
-  } catch (error) {
-    console.error("Error updating player name:", error);
-
-    toast.error({
-      title: `Error updating player's username to ${playerNameInput.value}.`,
-      description: `The error: ${(error as Error).message}`,
-    });
-  } finally {
-    loadingState.value = "";
-  }
-};
+    },
+    {
+      errorTitle: `Error updating player's username to ${playerNameInput.value}.`,
+    },
+  );
 
 const handleRefreshClick = async () => {
-  loadingState.value = "Refreshing username...";
+  // refreshPlayerName handles its own loading state and toasts
   await refreshPlayerName({
     osuId: props.osuId,
     currentUsername: props.playerName,
     playerId: props._playerId,
   });
-  loadingState.value = "";
 };
 </script>
 

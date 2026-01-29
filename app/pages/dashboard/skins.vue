@@ -1,7 +1,8 @@
 <template>
   <div class="flex w-full max-w-2xl flex-col items-center gap-4">
     <div class="flex w-full justify-end">
-      <ModalsCreateSkin />
+      <UButton :icon="ICONS.BUTTONS.ADD" @click="isCreateSkinOpen = true">Add Skin</UButton>
+      <ModalsCreateSkin v-model:open="isCreateSkinOpen" />
     </div>
 
     <!-- Skins Display -->
@@ -12,10 +13,14 @@
 </template>
 
 <script lang="ts" setup>
+import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
 // ------ Composables ------
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
+
+// ------ State ------
+const isCreateSkinOpen = ref(false);
 </script>
 
 <style></style>

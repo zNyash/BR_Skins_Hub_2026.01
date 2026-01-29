@@ -23,7 +23,15 @@
           />
         </UTooltip>
 
-        <ModalsEditPlayer :_playerId="_playerId" :player-name="playerName" :osu-id="osuId" />
+        <UTooltip text="Edit Player" :delay-duration="TOOLTIP.DELAY">
+          <UButton icon="lucide:edit" variant="ghost" color="info" @click="isEditing = true" />
+        </UTooltip>
+        <ModalsEditPlayer
+          v-model:open="isEditing"
+          :_playerId="_playerId"
+          :player-name="playerName"
+          :osu-id="osuId"
+        />
 
         <UTooltip
           :text="confirmDelete ? 'Click again to confirm' : 'Delete Player'"
@@ -63,6 +71,7 @@ const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
 
 // ------ State ------
 const isDeleting = ref(false);
+const isEditing = ref(false);
 const hasBeenDeleted = ref(false);
 const confirmDelete = ref(false);
 

@@ -1,6 +1,5 @@
 <template>
-  <UModal title="Add a player to the website" v-model:open="isModalOpen" :close="false">
-    <UButton label="Add Player" :icon="ICONS.BUTTONS.ADD" class="ml-auto w-fit" />
+  <UModal title="Add a player to the website" v-model:open="isOpen" :close="false">
     <template #body>
       <div class="flex w-full flex-col gap-4">
         <div class="flex w-full flex-col gap-2">
@@ -11,14 +10,17 @@
             <UInput type="number" :default-value="0" v-model="formState.osu_id" class="w-full" />
           </NFormField>
         </div>
-        <NSaveCancel @save="handleCreatePlayer" @cancel="closeModal" :loading-text="loadingState" />
+        <NSaveCancel
+          @save="handleCreatePlayer"
+          @cancel="closeModal"
+          :loading-text="statusMessage"
+        />
       </div>
     </template>
   </UModal>
 </template>
 
 <script lang="ts" setup>
-import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
 // ------ Local Types & Defaults ------
@@ -31,68 +33,67 @@ const getDefaultFormState = () => ({
 const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
 const { fetchPlayerUsername } = usePlayerNameRefresh();
+const { handleSubmit, statusMessage } = useSubmitAction();
 
 // ------ State ------
-const isModalOpen = ref(false);
-const loadingState = ref("");
-const formState = ref({ ...getDefaultFormState() });
+const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
+const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ Watchers ------
 watch(
-  () => isModalOpen.value,
+  () => isOpen.value,
   (newVal) => {
     if (!newVal) {
-      formState.value = { ...getDefaultFormState() };
+      resetAll();
     }
   },
 );
 
 // ------ Helpers ------
+const resetAll = () => {
+  resetForm();
+  statusMessage.value = "";
+};
 const closeModal = () => {
-  isModalOpen.value = false;
+  isOpen.value = false;
 };
 
 // ------ Methods ------
-const handleCreatePlayer = async () => {
-  try {
-    loadingState.value = "Checking changes...";
-    if (!formState.value.osu_id || formState.value.osu_id <= 0) {
-      toast.warning({
-        title: "Invalid Player ID",
-        description: "Please enter a valid osu! Player ID that is greater than 0.",
+const handleCreatePlayer = () =>
+  handleSubmit(
+    async () => {
+      statusMessage.value = "Checking changes...";
+      if (!formState.value.osu_id || formState.value.osu_id <= 0) {
+        toast.warning({
+          title: "Invalid Player ID",
+          description: "Please enter a valid osu! Player ID that is greater than 0.",
+        });
+        return false;
+      }
+
+      let finalName = formState.value.name.trim();
+      if (!finalName) {
+        statusMessage.value = "Fetching player username...";
+        finalName = await fetchPlayerUsername(formState.value.osu_id);
+      }
+
+      statusMessage.value = "Creating player...";
+      await createPlayerMutation.mutate({
+        name: finalName,
+        osu_id: formState.value.osu_id,
       });
 
-      return;
-    }
+      toast.success({
+        title: `Created player "${finalName}" successfully!`,
+      });
 
-    let finalName = formState.value.name.trim();
-    if (!finalName) {
-      loadingState.value = "Fetching player username...";
-      finalName = await fetchPlayerUsername(formState.value.osu_id);
-    }
-
-    loadingState.value = "Creating player...";
-    await createPlayerMutation.mutate({
-      name: finalName,
-      osu_id: formState.value.osu_id,
-    });
-
-    toast.success({
-      title: `Created player "${finalName}" successfully!`,
-    });
-
-    closeModal();
-  } catch (error) {
-    console.error("Error creating player:", error);
-
-    toast.error({
-      title: "Failed to create the player.",
-      description: (error as Error).message || "An unexpected error occurred.",
-    });
-  } finally {
-    loadingState.value = "";
-  }
-};
+      closeModal();
+      resetAll();
+    },
+    {
+      errorTitle: "Failed to create the player.",
+    },
+  );
 </script>
 
 <style></style>

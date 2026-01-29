@@ -1,5 +1,5 @@
 <template>
-  <UModal title="Edit Skin" :close="false" v-model:open="isModalOpen">
+  <UModal title="Edit Skin" :close="false" v-model:open="isOpen">
     <template #body>
       <div class="flex w-full flex-col gap-4">
         <div class="flex w-full flex-col gap-2">
@@ -10,7 +10,7 @@
             <UInput v-model="formdata.downloadUrl" class="w-full" />
           </NFormField>
         </div>
-        <NSaveCancel @save="onSave" @cancel="closeModal" :loading-text="loadingState" />
+        <NSaveCancel @save="onSave" @cancel="closeModal" :loading-text="statusMessage" />
       </div>
     </template>
   </UModal>
@@ -34,67 +34,64 @@ const props = defineProps<{
 
 // ------ Composables ------
 const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
+const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
 // ------ State ------
-const formdata = ref({ ...getUpdatedFormData() });
-const isModalOpen = defineModel<boolean>("isModalOpen", { required: true });
-const loadingState = ref("");
+const { state: formdata, reset: resetForm } = useResettableRef(getUpdatedFormData);
+const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ Watchers ------
 watch(
-  () => isModalOpen.value,
+  () => isOpen.value,
   (newVal) => {
-    if (!newVal) resetForm();
+    if (!newVal) {
+      resetForm();
+      statusMessage.value = "";
+    }
   },
 );
 
 // ------ Helpers ------
-const resetForm = () => {
-  formdata.value = { ...getUpdatedFormData() };
-};
 const closeModal = () => {
-  isModalOpen.value = false;
+  isOpen.value = false;
 };
 
 // ------ Methods ------
-const onSave = async () => {
-  try {
-    loadingState.value = "Checking for changes...";
-    if (
-      formdata.value.name === props.skin.name &&
-      formdata.value.downloadUrl === props.skin.download_url
-    ) {
+const onSave = () =>
+  handleSubmit(
+    async () => {
+      statusMessage.value = "Checking for changes...";
+      if (
+        formdata.value.name === props.skin.name &&
+        formdata.value.downloadUrl === props.skin.download_url
+      ) {
+        toast.success({
+          title: "No changes were made to the skin.",
+        });
+
+        closeModal();
+        return false;
+      }
+
+      statusMessage.value = "Updating skin...";
+      await updateSkin({
+        _id: props.skin._id,
+        name: formdata.value.name,
+        download_url: formdata.value.downloadUrl,
+      });
+
       toast.success({
-        title: "No changes were made to the skin.",
+        title: "The skin has been successfully updated!",
       });
 
       closeModal();
-      return;
-    }
-
-    loadingState.value = "Updating skin...";
-    await updateSkin({
-      _id: props.skin._id,
-      name: formdata.value.name,
-      download_url: formdata.value.downloadUrl,
-    });
-
-    closeModal();
-    resetForm();
-    toast.success({
-      title: "The skin has been successfully updated!",
-    });
-  } catch (error) {
-    toast.error({
-      title: "An error occurred while updating the skin.",
-      description: String(error),
-    });
-    console.error("Error updating skin:", error);
-  } finally {
-    loadingState.value = "";
-  }
-};
+      resetForm();
+    },
+    {
+      errorTitle: "An error occurred while updating the skin.",
+    },
+  );
 </script>
 
 <style></style>

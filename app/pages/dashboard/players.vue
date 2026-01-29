@@ -1,6 +1,12 @@
 <template>
   <div class="flex w-full max-w-2xl flex-col gap-4">
-    <ModalsCreatePlayer />
+    <UButton
+      label="Add Player"
+      :icon="ICONS.BUTTONS.ADD"
+      class="ml-auto w-fit"
+      @click="isCreatePlayerOpen = true"
+    />
+    <ModalsCreatePlayer v-model:open="isCreatePlayerOpen" />
 
     <div class="grid w-full grid-cols-2 gap-1.5">
       <div
@@ -28,10 +34,14 @@
 </template>
 
 <script lang="ts" setup>
+import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
 // ------ Composables ------
 const { data: playersList, isPending: playersLoading } = useConvexQuery(api.players.listPlayers);
+
+// ------ State ------
+const isCreatePlayerOpen = ref(false);
 </script>
 
 <style scoped>
