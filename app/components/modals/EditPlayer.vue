@@ -21,6 +21,24 @@
               />
             </UFieldGroup>
           </NFormField>
+
+          <USeparator class="my-2" />
+
+          <NFormField label="Linked Skins" class="w-full">
+            <USelectMenu
+              v-model="selectedSkinsIds"
+              :items="formattedSkins"
+              searchable
+              multiple
+              value-key="value"
+              block
+              placeholder="Select skins..."
+              class="w-full"
+            />
+            <p v-if="isLoadingPlayerSkins" class="text-muted-foreground mt-1 text-xs">
+              Loading current skins...
+            </p>
+          </NFormField>
         </div>
 
         <NSaveCancel @save="handleSaveChanges" @cancel="closeModal" :loading-text="statusMessage" />
@@ -30,8 +48,9 @@
 </template>
 
 <script lang="ts" setup>
+import type { SelectMenuItem } from "@nuxt/ui";
 import { api } from "~~/convex/_generated/api";
-import type { Id } from "~~/convex/_generated/dataModel";
+import type { Id, Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Props & Emits ------
 const props = defineProps<{
@@ -42,13 +61,41 @@ const props = defineProps<{
 
 // ------ Composables ------
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
+const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
 const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
+// ------ Queries ------
+const { data: allSkins } = useConvexQuery(api.skins.listSkins, {});
+const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery(
+  api.playerSkins.getSkinsByPlayer,
+  {
+    player_id: props._playerId,
+  },
+);
+
+const formattedSkins = computed(() => {
+  return (
+    allSkins.value?.map(
+      (skin) =>
+        ({
+          label: skin.name,
+          value: skin._id,
+          avatar: {
+            src: skin.preview_images[0],
+            size: "xl",
+          },
+          description: `by ${skin.author}`,
+        }) satisfies SelectMenuItem,
+    ) ?? []
+  );
+});
+
 // ------ State ------
 const isOpen = defineModel<boolean>("open", { required: true });
 const playerNameInput = ref(props.playerName);
+const selectedSkinsIds = ref<Id<"skins">[]>([]);
 
 // ------ Watchers ------
 watch(
@@ -57,12 +104,25 @@ watch(
     playerNameInput.value = newName;
   },
 );
+
+// Initialize selected skins when data loads or modal opens
+watch(
+  [playerSkinsRel, isOpen],
+  ([skins, open]) => {
+    if (open && skins) {
+      selectedSkinsIds.value = skins.map((s) => s._id);
+    }
+  },
+  { immediate: true },
+);
+
 watch(
   () => isOpen.value,
   (newVal) => {
     if (!newVal) {
       playerNameInput.value = props.playerName;
       statusMessage.value = "";
+      // Don't reset selectedSkins here, rely on the watch above to sync when re-opening
     }
   },
 );
@@ -77,28 +137,66 @@ const handleSaveChanges = () =>
   handleSubmit(
     async () => {
       statusMessage.value = "Checking changes...";
-      if (playerNameInput.value.trim() === props.playerName) {
+
+      const hasNameChanged = playerNameInput.value.trim() !== props.playerName;
+
+      // Check if skins changed
+      const currentIds = new Set<Id<"skins">>(selectedSkinsIds.value);
+      const initialIds = new Set<Id<"skins">>(playerSkinsRel.value?.map((s) => s._id) || []);
+
+      // Simple set equality check
+      let hasSkinsChanged = false;
+      if (initialIds.size !== currentIds.size) {
+        hasSkinsChanged = true;
+      } else {
+        for (const id of currentIds) {
+          if (!initialIds.has(id)) {
+            hasSkinsChanged = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasNameChanged && !hasSkinsChanged) {
         toast.success({
-          title: "No changes were made to the player.",
+          title: "No changes were made.",
         });
         closeModal();
         return false;
       }
 
-      statusMessage.value = "Updating player...";
-      await updatePlayerMutation.mutate({
-        id: props._playerId,
-        name: playerNameInput.value,
-      });
+      const promises = [];
+
+      if (hasNameChanged) {
+        statusMessage.value = "Updating username...";
+        promises.push(
+          updatePlayerMutation.mutate({
+            id: props._playerId,
+            name: playerNameInput.value,
+          }),
+        );
+      }
+
+      if (hasSkinsChanged) {
+        statusMessage.value = "Updating skins...";
+        promises.push(
+          updateSkinsMutation.mutate({
+            player_id: props._playerId,
+            skin_ids: Array.from(currentIds),
+          }),
+        );
+      }
+
+      await Promise.all(promises);
 
       toast.success({
-        title: `Successfully updated player's username to ${playerNameInput.value}!`,
+        title: "Player updated successfully!",
       });
 
       closeModal();
     },
     {
-      errorTitle: `Error updating player's username to ${playerNameInput.value}.`,
+      errorTitle: `Error updating player.`,
     },
   );
 

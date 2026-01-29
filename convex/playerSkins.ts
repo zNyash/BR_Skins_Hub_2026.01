@@ -9,7 +9,9 @@ export const addSkinToPlayer = mutation({
   handler: async (ctx, args) => {
     const exists = await ctx.db
       .query("playerSkins")
-      .withIndex("by_player_skin", (q) => q.eq("player_id", args.player_id).eq("skin_id", args.skin_id))
+      .withIndex("by_player_skin", (q) =>
+        q.eq("player_id", args.player_id).eq("skin_id", args.skin_id),
+      )
       .first();
 
     if (exists) {
@@ -32,7 +34,9 @@ export const removeSkinFromPlayer = mutation({
   handler: async (ctx, args) => {
     const relation = await ctx.db
       .query("playerSkins")
-      .withIndex("by_player_skin", (q) => q.eq("player_id", args.player_id).eq("skin_id", args.skin_id))
+      .withIndex("by_player_skin", (q) =>
+        q.eq("player_id", args.player_id).eq("skin_id", args.skin_id),
+      )
       .first();
 
     if (!relation) {
@@ -78,5 +82,41 @@ export const addSkinsToPlayer = mutation({
         });
       }
     }
+  },
+});
+
+export const updatePlayerSkins = mutation({
+  args: {
+    player_id: v.id("players"),
+    skin_ids: v.array(v.id("skins")),
+  },
+  handler: async (ctx, args) => {
+    // 1. Get current relations
+    const currentRelations = await ctx.db
+      .query("playerSkins")
+      .withIndex("by_player", (q) => q.eq("player_id", args.player_id))
+      .collect();
+
+    const currentSkinIds = new Set(currentRelations.map((r) => r.skin_id));
+    const targetSkinIds = new Set(args.skin_ids);
+
+    // 2. Identify skins to remove (in current but not in target)
+    const toRemove = currentRelations.filter((r) => !targetSkinIds.has(r.skin_id));
+
+    // 3. Identify skins to add (in target but not in current)
+    const toAdd = args.skin_ids.filter((id) => !currentSkinIds.has(id));
+
+    // 4. Perform deletions
+    await Promise.all(toRemove.map((r) => ctx.db.delete(r._id)));
+
+    // 5. Perform insertions
+    await Promise.all(
+      toAdd.map((skinId) =>
+        ctx.db.insert("playerSkins", {
+          player_id: args.player_id,
+          skin_id: skinId,
+        }),
+      ),
+    );
   },
 });
