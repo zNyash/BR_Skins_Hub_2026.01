@@ -39,8 +39,6 @@ const { fetchPlayerUsername } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
 
-// ------ Local State ------
-
 // ------ Watchers ------
 watch(
   () => isOpen.value,

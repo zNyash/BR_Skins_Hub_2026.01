@@ -25,19 +25,12 @@
           <USeparator class="my-2" />
 
           <NFormField label="Linked Skins" class="w-full">
-            <USelectMenu
+            <PlayerSkinSelector
+              v-if="!isLoadingPlayerSkins && allSkins"
+              :skins="allSkins"
               v-model="selectedSkinsIds"
-              :items="formattedSkins"
-              searchable
-              multiple
-              value-key="value"
-              block
-              placeholder="Select skins..."
-              class="w-full"
             />
-            <p v-if="isLoadingPlayerSkins" class="text-muted-foreground mt-1 text-xs">
-              Loading current skins...
-            </p>
+            <p v-else class="text-muted mt-1 text-xs">Loading skins...</p>
           </NFormField>
         </div>
 
@@ -48,7 +41,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { SelectMenuItem } from "@nuxt/ui";
 import { api } from "~~/convex/_generated/api";
 import type { Id, Doc } from "~~/convex/_generated/dataModel";
 
@@ -78,24 +70,6 @@ const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery
 // ------ Local State ------
 const playerNameInput = ref(props.playerName);
 const selectedSkinsIds = ref<Id<"skins">[]>([]);
-
-// ------ Computed ------
-const formattedSkins = computed(() => {
-  return (
-    allSkins.value?.map(
-      (skin) =>
-        ({
-          label: skin.name,
-          value: skin._id,
-          avatar: {
-            src: skin.preview_images[0],
-            size: "xl",
-          },
-          description: `by ${skin.author}`,
-        }) satisfies SelectMenuItem,
-    ) ?? []
-  );
-});
 
 // ------ Watchers ------
 watch(

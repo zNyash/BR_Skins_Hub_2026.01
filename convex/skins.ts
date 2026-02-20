@@ -31,6 +31,7 @@ export const updateSkin = mutation({
     author: v.optional(v.string()),
     download_url: v.optional(v.string()),
     preview_images: v.optional(v.array(v.string())),
+    download_count: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { _id, ...data } = args;

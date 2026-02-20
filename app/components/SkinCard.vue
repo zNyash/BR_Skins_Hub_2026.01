@@ -6,6 +6,8 @@
       <UButton
         :icon="ICONS.DOWNLOAD"
         :href="skin.download_url"
+        target="_blank"
+        @click="processDownload"
         variant="soft"
         color="neutral2"
         class="absolute top-1 right-1 opacity-0 transition-opacity duration-150 group-hover/card:opacity-100"
@@ -64,6 +66,7 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from "@nuxt/ui";
 import { formatTimeAgo } from "@vueuse/core";
+import Skins from "~/pages/dashboard/skins.vue";
 import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
@@ -80,6 +83,7 @@ const props = defineProps<{
 // ------ External Composables ------
 const toast = useToast();
 const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
+const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 
 // ------ Local State ------
 const isLoading = ref(false);
@@ -129,6 +133,21 @@ async function processSkinDeletion() {
     });
   } catch (error) {
     console.error("Error deleting skin:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function processDownload() {
+  try {
+    isLoading.value = true;
+
+    updateSkin({
+      _id: props.skin._id,
+      download_count: props.skin.download_count + 1,
+    });
+  } catch (error) {
+    console.error("Failed to update the download count.");
   } finally {
     isLoading.value = false;
   }

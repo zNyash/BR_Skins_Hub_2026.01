@@ -67,6 +67,7 @@ const props = defineProps<{
 // ------ External Composables ------
 const toast = useAppToast();
 const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
+const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
 const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
 
 // ------ Local State ------
@@ -80,6 +81,11 @@ const performPlayerDelete = async () => {
   try {
     isDeleting.value = true;
     await deletePlayerMutation.mutate({ player_id: props._playerId });
+
+    updateSkinsMutation.mutate({
+      player_id: props._playerId,
+      skin_ids: [],
+    });
 
     hasBeenDeleted.value = true;
 
