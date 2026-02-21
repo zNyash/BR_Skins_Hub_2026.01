@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
     <!-- Header/Stats -->
     <div class="flex items-center justify-between text-xs">
       <span class="text-muted">{{ modelValue.length }} selected</span>
@@ -10,7 +10,7 @@
     <TransitionGroup
       name="skin-list"
       tag="div"
-      class="border-muted bg-muted/20 grid max-h-[400px] w-full grid-cols-2 gap-3 overflow-y-auto rounded-lg border p-2 pr-1 sm:grid-cols-2"
+      class="border-muted bg-muted/25 grid max-h-100 w-full grid-cols-2 gap-1 overflow-y-auto rounded-lg border p-1.5"
     >
       <div
         v-for="skin in sortedSkins"
@@ -19,9 +19,9 @@
         @click="toggleSelection(skin._id)"
       >
         <!-- Selection Indicator -->
-        <div class="absolute top-2 right-2 z-20">
+        <div class="absolute top-1 right-1 z-20">
           <div
-            class="flex size-6 items-center justify-center rounded-full border transition-all duration-200"
+            class="flex size-4 items-center justify-center rounded-full border transition-all duration-200"
             :class="[
               isSelected(skin._id)
                 ? 'bg-primary border-primary text-white'
@@ -32,20 +32,16 @@
           </div>
         </div>
 
-        <!-- Image Slider (Mini) -->
+        <!-- Image Preview -->
         <div
           class="pointer-events-none relative aspect-video w-full opacity-80 transition-opacity group-hover:opacity-100"
         >
           <!-- Using ImageSlider but disabling interactions to prevent conflict with card click -->
           <img :src="skin.preview_images[0]" class="size-full object-cover" />
-          <div
-            v-if="isSelected(skin._id)"
-            class="bg-primary/10 absolute inset-0 mix-blend-overlay"
-          />
         </div>
 
         <!-- Info -->
-        <div class="flex flex-col p-2">
+        <div class="flex flex-col px-2 py-1">
           <span
             class="truncate text-sm font-medium"
             :class="isSelected(skin._id) ? 'text-primary' : 'text-toned'"
