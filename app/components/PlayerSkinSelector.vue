@@ -10,12 +10,12 @@
     <TransitionGroup
       name="skin-list"
       tag="div"
-      class="border-muted bg-muted/25 grid max-h-100 w-full grid-cols-2 gap-1 overflow-y-auto rounded-lg border p-1.5"
+      class="border-muted bg-elevated grid max-h-100 w-full grid-cols-2 gap-1 overflow-y-auto rounded-lg border p-1.5"
     >
       <div
         v-for="skin in sortedSkins"
         :key="skin._id"
-        class="group border-muted/50 hover:border-primary/50 relative flex flex-col overflow-hidden rounded-md border bg-black transition-colors"
+        class="group border-muted/50 hover:border-primary/50 bg-default relative flex flex-col overflow-hidden rounded-md border transition-colors"
       >
         <!-- Selection Indicator -->
         <div class="pointer-events-none absolute top-1 right-1 z-20">
