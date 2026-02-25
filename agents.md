@@ -68,7 +68,22 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
 ### 5. Composables vs Components
 
 - **Composables**: Should generally handle business logic and return state/methods.
-- **Components**: Should generally handle UI side-effects (toasts) based on the composable's result, UNLESS using a dedicated UI-helper composable like `useSubmitAction`.
+### 6. Vue 3.5+ Modern Syntax
+
+- **Props Destructuring**: Use reactive props destructuring. Do **NOT** use `withDefaults` or `props.x`.
+  ```typescript
+  // ✅ DO:
+  const { title = "Default", count } = defineProps<{ title?: string; count: number }>();
+  // Use `title` directly in script and template. It stays reactive.
+
+  // ❌ DON'T:
+  const props = withDefaults(defineProps<Props>(), { ... });
+  console.log(props.title);
+  ```
+- **Models**: Use `defineModel` for all v-model bindings.
+  ```typescript
+  const modelValue = defineModel<string>({ required: true });
+  ```
 
 ---
 
@@ -101,7 +116,8 @@ Declare **types, interfaces, enums, and default values** that are **local to the
 - Do NOT place runtime logic or reactive state here.
 
 **Examples:**
-
+**Use Reactive Props Destructuring** (Vue 3.5+). Do NOT use `withDefaults`.
+- 
 - `type LocalFormState`
 - `interface UploadOptions`
 - `const DEFAULT_STATUS = "idle"`
