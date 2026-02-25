@@ -15,11 +15,10 @@
       <div
         v-for="skin in sortedSkins"
         :key="skin._id"
-        class="group border-muted/50 hover:border-primary/50 relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-black transition-colors"
-        @click="toggleSelection(skin._id)"
+        class="group border-muted/50 hover:border-primary/50 relative flex flex-col overflow-hidden rounded-md border bg-black transition-colors"
       >
         <!-- Selection Indicator -->
-        <div class="absolute top-1 right-1 z-20">
+        <div class="pointer-events-none absolute top-1 right-1 z-20">
           <div
             class="flex size-4 items-center justify-center rounded-full border transition-all duration-200"
             :class="[
@@ -34,10 +33,11 @@
 
         <!-- Image Preview -->
         <div
-          class="pointer-events-none relative aspect-video w-full opacity-80 transition-opacity group-hover:opacity-100"
+          class="relative aspect-video w-full cursor-pointer opacity-80 transition-opacity group-hover:opacity-100"
+          @click="toggleSelection(skin._id)"
         >
           <!-- Using ImageSlider but disabling interactions to prevent conflict with card click -->
-          <img :src="skin.preview_images[0]" class="size-full object-cover" />
+          <ImageSlider :images="skin.preview_images" />
         </div>
 
         <!-- Info -->

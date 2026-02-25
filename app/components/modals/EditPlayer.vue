@@ -1,5 +1,5 @@
 <template>
-  <UModal title="Editing Player" :close="false" v-model:open="isOpen">
+  <UModal title="Editing Player" :close="false" v-model:open="isOpen" :ui="{ content: 'max-w-xl' }">
     <template #body>
       <span class="flex w-full flex-col items-start gap-4">
         <!-- Inputs -->

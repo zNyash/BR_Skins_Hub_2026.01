@@ -17,14 +17,14 @@
     <!-- Controls -->
     <div v-if="images.length > 1">
       <UButton
-        @click="prevImage"
+        @click.stop="prevImage"
         class="absolute top-1/2 left-1 -translate-y-1/2"
         icon="material-symbols:arrow-back-ios-new-rounded"
         color="neutral2"
         variant="soft"
       />
       <UButton
-        @click="nextImage"
+        @click.stop="nextImage"
         class="absolute top-1/2 right-1 -translate-y-1/2 scale-x-[-1]"
         icon="material-symbols:arrow-back-ios-new-rounded"
         color="neutral2"
@@ -36,7 +36,7 @@
         <span
           v-for="(image, index) in images"
           :key="index"
-          @click="currentIndex = index"
+          @click.stop="currentIndex = index"
           class="group flex h-3 w-full cursor-pointer flex-col justify-end"
         >
           <!-- Indicator Background -->
