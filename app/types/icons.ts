@@ -11,6 +11,8 @@ const ICONS = {
   DELETE: "lucide:trash-2",
   EDIT: "lucide:square-pen",
   SEARCH: "lucide:search",
+  LOCK: "lucide:lock",
+  USER: "lucide:user",
 
   BUTTONS: {
     CLOSE: "lucide:x",

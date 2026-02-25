@@ -1,6 +1,7 @@
 {
   "name": "BR_Skins_Hub_2026-01",
   "dependencies": {
+    "@clerk/themes": "^2.4.55",
     "@nuxt/ui": "^4.4.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^25.0.10",
@@ -26,6 +27,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@clerk/nuxt": "^1.13.24",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   }

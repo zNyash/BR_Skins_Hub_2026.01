@@ -1,18 +1,24 @@
 import tailwindcss from "@tailwindcss/vite";
+import { dark } from "@clerk/themes";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: false },
+  devtools: { enabled: true },
 
   vite: {
     plugins: [tailwindcss()],
   },
 
   css: ["./app/assets/main.css"],
-  modules: ["convex-nuxt", "@nuxt/ui", "@uploadthing/nuxt"],
+  modules: ["convex-nuxt", "@nuxt/ui", "@uploadthing/nuxt", "@clerk/nuxt"],
   convex: {
     url: process.env.CONVEX_URL,
+  },
+  clerk: {
+    appearance: {
+      theme: dark,
+    },
   },
 
   colorMode: {
