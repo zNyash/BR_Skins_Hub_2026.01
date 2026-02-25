@@ -25,7 +25,7 @@
         ref="file-input"
         type="file"
         multiple
-        :accept="props.accept"
+        :accept="accept"
         class="hidden"
         @change="handleFileSelection"
       />
@@ -82,18 +82,12 @@ import { ICONS } from "~/types/icons";
 
 // ------ Local Types & Defaults ------
 interface Props {
-  modelValue: File[];
   accept?: string;
 }
 
 // ------ Props & Emits ------
-const props = withDefaults(defineProps<Props>(), {
-  modelValue: () => [],
-  accept: "image/*",
-});
-const emit = defineEmits<{
-  (e: "update:modelValue", value: File[]): void;
-}>();
+const modelValue = defineModel<File[]>({ default: () => [] });
+const { accept = "image/*" } = defineProps<Props>();
 
 // ------ External Composables ------
 const { isDraggingOver, activeState, resetState } = useDragDropState();
@@ -102,8 +96,8 @@ const { getFileKey, formatFileSize } = useFileHelpers();
 
 // ------ Computed ------
 const acceptedImageTypeLabel = computed(() =>
-  props.accept
-    ? props.accept
+  accept
+    ? accept
         .replace(/image\//g, "")
         .toUpperCase()
         .split(",")
@@ -115,17 +109,16 @@ const acceptedImageTypeLabel = computed(() =>
 const appendSelectedFiles = (files: File[]) => {
   if (files.length === 0) return;
 
-  const updatedFiles = [...props.modelValue, ...files];
-  emit("update:modelValue", updatedFiles);
+  modelValue.value = [...modelValue.value, ...files];
 };
 
 const removeFileAt = (index: number) => {
-  const fileToRemove = props.modelValue[index];
+  const fileToRemove = modelValue.value[index];
   if (fileToRemove) clearPreview(fileToRemove);
 
-  const newFiles = [...props.modelValue];
+  const newFiles = [...modelValue.value];
   newFiles.splice(index, 1);
-  emit("update:modelValue", newFiles);
+  modelValue.value = newFiles;
 };
 
 // ------ Handlers ------
