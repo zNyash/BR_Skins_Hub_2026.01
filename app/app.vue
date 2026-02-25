@@ -16,6 +16,7 @@
 
 <script lang="ts" setup>
 import type { NavigationMenuItem } from "@nuxt/ui";
+import { ICONS } from "./types/icons";
 
 // ------ External Composables ------
 const { isSignedIn } = useAuth();
@@ -26,25 +27,25 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
     {
       label: "Home",
       to: "/",
-      icon: "mdi:home-outline",
+      icon: ICONS.HOME,
     },
   ];
 
   if (isSignedIn.value) {
     items.push({
       label: "Dashboard",
-      icon: "mdi:account-multiple-outline",
+      icon: ICONS.DASHBOARD,
       children: [
         {
           label: "Manage Players",
           to: "/dashboard/players",
-          icon: "mdi:account-cog-outline",
+          icon: ICONS.USER_COG,
           description: "Add, edit, or remove players from the website and listing.",
         },
         {
           label: "Manage Skins",
           to: "/dashboard/skins",
-          icon: "mdi:folder-multiple-outline",
+          icon: ICONS.FOLDER,
           description:
             "Add, edit, or remove skins from the website and listing. You can change the skin name, author, images and download links here.",
         },

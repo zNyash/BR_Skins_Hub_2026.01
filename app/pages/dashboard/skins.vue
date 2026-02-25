@@ -7,6 +7,8 @@
 
     <!-- Skins Display -->
     <div class="grid w-full grid-cols-2 gap-2">
+      <LoadingPage :isLoading="isLoadingSkins" />
+
       <SkinCard v-for="skin in skinsList" :key="skin._id" :skin="skin" />
     </div>
   </div>

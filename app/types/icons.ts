@@ -13,6 +13,11 @@ const ICONS = {
   SEARCH: "lucide:search",
   LOCK: "lucide:lock",
   USER: "lucide:user",
+  USER_COG: "lucide:user-cog",
+  FOLDER: "lucide:folder",
+  LOADING: "svg-spinners:ring-resize",
+  DASHBOARD: "lucide:layout-dashboard",
+  HOME: "lucide:house",
 
   BUTTONS: {
     CLOSE: "lucide:x",
