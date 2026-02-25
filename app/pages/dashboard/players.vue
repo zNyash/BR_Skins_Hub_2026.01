@@ -2,7 +2,7 @@
   <div class="flex w-full max-w-2xl flex-col gap-4">
     <UButton
       label="Add Player"
-      :icon="ICONS.BUTTONS.ADD"
+      :icon="ICONS.ADD"
       class="ml-auto w-fit"
       @click="isCreatePlayerOpen = true"
     />

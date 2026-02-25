@@ -92,13 +92,13 @@ const isModalOpen = ref(false);
 const menuItems = ref<ContextMenuItem[]>([
   {
     label: "Edit Skin",
-    icon: ICONS.BUTTONS.EDIT,
+    icon: ICONS.EDIT,
     color: "info",
     onSelect: openEditModal,
   },
   {
     label: "Delete Skin",
-    icon: ICONS.BUTTONS.DELETE,
+    icon: ICONS.DELETE,
     color: "error",
     onSelect: processSkinDeletion,
   },

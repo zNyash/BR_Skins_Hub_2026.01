@@ -1,7 +1,7 @@
 <template>
   <div class="flex w-full max-w-2xl flex-col items-center gap-4">
     <div class="flex w-full justify-end">
-      <UButton :icon="ICONS.BUTTONS.ADD" @click="isCreateSkinOpen = true">Add Skin</UButton>
+      <UButton :icon="ICONS.ADD" @click="isCreateSkinOpen = true">Add Skin</UButton>
       <ModalsCreateSkin v-model:open="isCreateSkinOpen" />
     </div>
 

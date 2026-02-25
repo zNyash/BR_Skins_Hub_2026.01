@@ -58,7 +58,7 @@
             <!-- Actions -->
             <div class="z-10 ml-auto flex p-1">
               <UButton
-                :icon="ICONS.BUTTONS.DELETE"
+                :icon="ICONS.DELETE"
                 variant="solid"
                 color="neutral"
                 size="xs"
