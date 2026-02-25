@@ -29,6 +29,7 @@
     <div
       class="border-muted bg-elevated grid max-h-100 w-full grid-cols-2 gap-1 overflow-y-auto rounded-lg border p-1.5"
     >
+      <!-- Skin Card -->
       <div
         v-for="skin in sortedSkins"
         :key="skin._id"
@@ -37,7 +38,7 @@
         <!-- Selection Indicator -->
         <div class="pointer-events-none absolute top-1 right-1 z-20">
           <div
-            class="flex size-4 items-center justify-center rounded-full border transition-all duration-200"
+            class="flex size-5 items-center justify-center rounded-md border transition-all duration-200"
             :class="[
               isSelected(skin._id)
                 ? 'bg-primary border-primary text-white'
@@ -79,13 +80,9 @@ import type { Id, Doc } from "~~/convex/_generated/dataModel";
 type Skin = Doc<"skins">;
 
 // ------ Props & Emits ------
-const props = defineProps<{
+const modelValue = defineModel<Id<"skins">[]>({ default: () => [] });
+const { skins } = defineProps<{
   skins: Skin[];
-  modelValue: Id<"skins">[];
-}>();
-
-const emit = defineEmits<{
-  (e: "update:modelValue", value: Id<"skins">[]): void;
 }>();
 
 // ------ Local State ------
@@ -93,7 +90,7 @@ const searchQuery = ref("");
 
 // ------ Computed ------
 const filteredSkins = computed(() => {
-  if (!searchQuery.value.trim()) return props.skins;
+  if (!searchQuery.value.trim()) return skins;
 
   // Split query into terms (e.g. "aris nsh" -> ["aris", "nsh"])
   const terms = searchQuery.value
@@ -101,7 +98,7 @@ const filteredSkins = computed(() => {
     .split(/\s+/)
     .filter((t) => t.length > 0);
 
-  return props.skins.filter((s) => {
+  return skins.filter((s) => {
     const searchTarget = `${s.name} ${s.author || ""}`.toLowerCase();
     // Check if EVERY term exists somewhere in the combined name+author string
     return terms.every((term) => searchTarget.includes(term));
@@ -124,10 +121,10 @@ const sortedSkins = computed(() => {
 });
 
 // ------ Actions ------
-const isSelected = (id: Id<"skins">) => props.modelValue.includes(id);
+const isSelected = (id: Id<"skins">) => modelValue.value.includes(id);
 
 const toggleSelection = (id: Id<"skins">) => {
-  const newSelection = [...props.modelValue];
+  const newSelection = [...modelValue.value];
   const index = newSelection.indexOf(id);
 
   if (index === -1) {
@@ -136,6 +133,6 @@ const toggleSelection = (id: Id<"skins">) => {
     newSelection.splice(index, 1);
   }
 
-  emit("update:modelValue", newSelection);
+  modelValue.value = newSelection;
 };
 </script>
