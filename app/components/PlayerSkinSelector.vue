@@ -1,5 +1,24 @@
 <template>
   <div class="flex flex-col gap-2">
+    <!-- Search Bar -->
+    <UInput
+      v-model="searchQuery"
+      :icon="ICONS.SEARCH"
+      placeholder="Search skins..."
+      size="sm"
+      :ui="{ trailing: 'pe-1' }"
+    >
+      <template v-if="searchQuery.length" #trailing>
+        <UButton
+          size="sm"
+          color="neutral"
+          variant="link"
+          :icon="ICONS.CLOSE"
+          @click="searchQuery = ''"
+        />
+      </template>
+    </UInput>
+
     <!-- Header/Stats -->
     <div class="flex items-center justify-between text-xs">
       <span class="text-muted">{{ modelValue.length }} selected</span>
@@ -7,9 +26,7 @@
     </div>
 
     <!-- Scrollable Grid -->
-    <TransitionGroup
-      name="skin-list"
-      tag="div"
+    <div
       class="border-muted bg-elevated grid max-h-100 w-full grid-cols-2 gap-1 overflow-y-auto rounded-lg border p-1.5"
     >
       <div
@@ -50,11 +67,12 @@
           <span class="text-muted truncate text-xs">{{ skin.author }}</span>
         </div>
       </div>
-    </TransitionGroup>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ICONS } from "~/types/icons";
 import type { Id, Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
@@ -70,10 +88,29 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: Id<"skins">[]): void;
 }>();
 
+// ------ Local State ------
+const searchQuery = ref("");
+
 // ------ Computed ------
+const filteredSkins = computed(() => {
+  if (!searchQuery.value.trim()) return props.skins;
+
+  // Split query into terms (e.g. "aris nsh" -> ["aris", "nsh"])
+  const terms = searchQuery.value
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 0);
+
+  return props.skins.filter((s) => {
+    const searchTarget = `${s.name} ${s.author || ""}`.toLowerCase();
+    // Check if EVERY term exists somewhere in the combined name+author string
+    return terms.every((term) => searchTarget.includes(term));
+  });
+});
+
 const sortedSkins = computed(() => {
   // Create shallow copy to sort
-  return [...props.skins].sort((a, b) => {
+  return [...filteredSkins.value].sort((a, b) => {
     const aSelected = isSelected(a._id);
     const bSelected = isSelected(b._id);
 
@@ -102,21 +139,3 @@ const toggleSelection = (id: Id<"skins">) => {
   emit("update:modelValue", newSelection);
 };
 </script>
-
-<style scoped>
-.skin-list-move,
-.skin-list-enter-active,
-.skin-list-leave-active {
-  transition: all 0.3s ease;
-}
-
-.skin-list-enter-from,
-.skin-list-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-.skin-list-leave-active {
-  position: absolute;
-}
-</style>

@@ -10,6 +10,7 @@ const ICONS = {
   REFRESH: "lucide:refresh-cw",
   DELETE: "lucide:trash-2",
   EDIT: "lucide:square-pen",
+  SEARCH: "lucide:search",
 
   BUTTONS: {
     CLOSE: "lucide:x",
