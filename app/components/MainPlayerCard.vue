@@ -22,12 +22,15 @@
 <script lang="ts" setup>
 import type { Doc } from "~~/convex/_generated/dataModel";
 
+// ------ Local Types & Defaults ------
 type Player = Doc<"players">;
 
+// ------ Props & Emits ------
 const props = defineProps<{
   player: Player;
 }>();
 
+// ------ Handlers ------
 const handleRedirect = () => {
   navigateTo(`/player/${props.player.osu_id}`);
 };
