@@ -1,20 +1,23 @@
 <template>
-  <main class="mx-auto mt-10 max-w-md">
-    <UEmpty
-      variant="naked"
-      icon="ic:round-warning"
-      title="There's nothing here yet."
-      description="Here will be the display of all players and when clicked it would go to their page where it would be listed all of their skins."
-      :actions="[
-        {
-          label: 'Go to players',
-          to: '/dashboard/players',
-          variant: 'solid',
-          color: 'primary',
-        },
-      ]"
-    />
-  </main>
+  <div class="flex w-full flex-col items-center">
+    <div v-if="playersList" class="grid w-full max-w-2xl grid-cols-2 gap-2">
+      <MainPlayerCard v-for="player in playersList" :key="player._id" :player="player" />
+    </div>
+    <div v-else class="grid w-full max-w-2xl grid-cols-2 gap-2">
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+      <USkeleton class="h-14 w-full" />
+    </div>
+  </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { api } from "~~/convex/_generated/api";
+
+const { data: playersList } = useConvexQuery(api.players.listPlayers);
+</script>
