@@ -16,7 +16,7 @@
     <section v-if="skins" class="flex w-full max-w-3xl flex-col gap-2">
       <UInput
         placeholder="Search skins..."
-        class="w-60"
+        class="search-input-default-size"
         :icon="ICONS.SEARCH"
         v-model="skinSearchQuery"
       />

@@ -5,7 +5,7 @@
         v-model="inputSearch"
         :icon="ICONS.SEARCH"
         placeholder="Search players by name or ID..."
-        class="w-full max-w-60"
+        class="search-input-default-size"
       />
 
       <div v-if="filteredPlayers.length" class="grid w-full grid-cols-2 gap-2">
