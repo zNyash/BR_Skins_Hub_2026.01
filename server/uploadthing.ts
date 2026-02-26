@@ -7,7 +7,7 @@ export const uploadRouter = {
   skinImages: f({
     image: {
       maxFileSize: "4MB",
-      maxFileCount: 6,
+      maxFileCount: 10,
     },
   }).onUploadComplete(async ({ file }) => {
     return { imageUrl: file.ufsUrl };
