@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full flex-col items-center">
-    <section class="flex w-full max-w-2xl flex-col items-center gap-4 pb-48">
+    <section class="flex w-full max-w-2xl flex-col items-center gap-4">
       <div class="flex w-full">
         <UInput
           v-model="inputSearch"
