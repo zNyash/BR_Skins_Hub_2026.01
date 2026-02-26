@@ -8,7 +8,7 @@
             <UFieldGroup class="w-full">
               <UInput
                 placeholder="Name"
-                v-model="playerNameInput"
+                v-model="formState.name"
                 class="w-full"
                 @keydown.enter="handleSaveChanges"
               />
@@ -28,7 +28,7 @@
             <PlayerSkinSelector
               v-if="!isLoadingPlayerSkins && allSkins"
               :skins="allSkins"
-              v-model="selectedSkinsIds"
+              v-model="formState.skinIds"
             />
             <p v-else class="text-muted mt-1 text-xs">Loading skins...</p>
           </NFormField>
@@ -43,6 +43,12 @@
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
+
+// ------ Local Types & Defaults ------
+const getDefaults = () => ({
+  name: "",
+  skinIds: [] as Id<"skins">[],
+});
 
 // ------ Props & Emits ------
 const props = defineProps<{
@@ -59,6 +65,7 @@ const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins)
 const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
+const { state: formState, reset: resetForm } = useResettableRef(getDefaults);
 
 const { data: allSkins } = useConvexQuery(api.skins.listSkins, {});
 const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery(
@@ -69,15 +76,15 @@ const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery
 );
 
 // ------ Local State ------
-const playerNameInput = ref(props.playerName);
-const selectedSkinsIds = ref<Id<"skins">[]>([]);
+// (Removed individual refs in favor of formState)
 
 // ------ Watchers ------
 watch(
   () => props.playerName,
   (newName) => {
-    playerNameInput.value = newName;
+    formState.value.name = newName;
   },
+  { immediate: true },
 );
 
 // Initialize selected skins when data loads or modal opens
@@ -85,7 +92,7 @@ watch(
   [playerSkinsRel, isOpen],
   ([skins, open]) => {
     if (open && skins) {
-      selectedSkinsIds.value = skins.map((s) => s._id);
+      formState.value.skinIds = skins.map((s) => s._id);
     }
   },
   { immediate: true },
@@ -95,9 +102,10 @@ watch(
   () => isOpen.value,
   (newVal) => {
     if (!newVal) {
-      playerNameInput.value = props.playerName;
+      resetForm();
+      // Setting formState back to props values because the resetForm sets to empty values based on getDefaults
+      formState.value.name = props.playerName;
       statusMessage.value = "";
-      // Don't reset selectedSkins here, rely on the watch above to sync when re-opening
     }
   },
 );
@@ -123,10 +131,10 @@ const handleSaveChanges = () =>
     async () => {
       statusMessage.value = "Checking changes...";
 
-      const hasNameChanged = playerNameInput.value.trim() !== props.playerName;
+      const hasNameChanged = formState.value.name.trim() !== props.playerName;
 
       // Check if skins changed
-      const currentIds = new Set<Id<"skins">>(selectedSkinsIds.value);
+      const currentIds = new Set<Id<"skins">>(formState.value.skinIds);
       const initialIds = new Set<Id<"skins">>(playerSkinsRel.value?.map((s) => s._id) || []);
 
       // Simple set equality check
@@ -157,7 +165,7 @@ const handleSaveChanges = () =>
         promises.push(
           updatePlayerMutation.mutate({
             id: props._playerId,
-            name: playerNameInput.value,
+            name: formState.value.name,
           }),
         );
       }
