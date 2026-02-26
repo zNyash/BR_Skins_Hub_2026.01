@@ -73,6 +73,7 @@
 </template>
 
 <script lang="ts" setup>
+import Fuse from "fuse.js";
 import { ICONS } from "~/types/icons";
 import type { Id, Doc } from "~~/convex/_generated/dataModel";
 
@@ -90,19 +91,15 @@ const searchQuery = ref("");
 
 // ------ Computed ------
 const filteredSkins = computed(() => {
+  if (!skins.length) return [];
   if (!searchQuery.value.trim()) return skins;
 
-  // Split query into terms (e.g. "aris nsh" -> ["aris", "nsh"])
-  const terms = searchQuery.value
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 0);
-
-  return skins.filter((s) => {
-    const searchTarget = `${s.name} ${s.author || ""}`.toLowerCase();
-    // Check if EVERY term exists somewhere in the combined name+author string
-    return terms.every((term) => searchTarget.includes(term));
+  const fuse = new Fuse(skins, {
+    keys: ["name", "author"] as (keyof Skin)[],
+    threshold: 0.4,
   });
+
+  return fuse.search(searchQuery.value).map((result) => result.item);
 });
 
 const sortedSkins = computed(() => {
