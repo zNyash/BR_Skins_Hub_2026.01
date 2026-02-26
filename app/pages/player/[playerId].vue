@@ -1,9 +1,13 @@
 <template>
-  <div>
+  <div class="flex w-full flex-col items-center gap-12">
     <section v-if="player" class="flex flex-col items-center gap-1">
-      <div class="squircle size-24 overflow-hidden rounded-3xl">
+      <a
+        class="squircle size-24 overflow-hidden rounded-3xl"
+        :href="`https://osu.ppy.sh/users/${player.osu_id}`"
+        target="_blank"
+      >
         <img :src="`https://a.ppy.sh/${playerId}`" alt="" class="size-full object-cover" />
-      </div>
+      </a>
       <div>
         <h1 class="text-lg font-medium">{{ player.name }}</h1>
       </div>
