@@ -7,14 +7,17 @@
         isDeleting ? 'pointer-events-none opacity-50 grayscale' : '',
       ]"
     >
-      <UAvatar
-        :alt="playerName"
-        :src="`https://a.ppy.sh/${osuId}`"
-        class="hover:cursor-pointer"
-        @click="handleRedirect"
-      />
+      <NuxtLink :to="`/player/${osuId}`">
+        <UAvatar
+          :alt="playerName"
+          :src="`https://a.ppy.sh/${osuId}`"
+          class="hover:cursor-pointer"
+        />
+      </NuxtLink>
       <span class="flex flex-col justify-center">
-        <p class="font-medium hover:cursor-pointer" @click="handleRedirect">{{ playerName }}</p>
+        <NuxtLink :to="`/player/${osuId}`">
+          <p class="font-medium hover:cursor-pointer">{{ playerName }}</p>
+        </NuxtLink>
         <p class="text-muted -mt-1 text-xs">{{ osuId }}</p>
       </span>
       <span class="ml-auto flex items-center gap-1">
@@ -130,10 +133,6 @@ const handleRefreshClick = async () => {
     currentCoverUrl: props.coverUrl,
     playerId: props._playerId,
   });
-};
-
-const handleRedirect = () => {
-  navigateTo(`/player/${props.osuId}`);
 };
 </script>
 

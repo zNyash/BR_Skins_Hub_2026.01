@@ -1,7 +1,7 @@
 <template>
-  <div
+  <NuxtLink
     class="bg-muted hover:ring-primary relative isolate flex w-full items-center gap-2 overflow-hidden rounded-md p-2 shadow-lg ring ring-transparent transition-all duration-150 hover:cursor-pointer"
-    @click="handleRedirect"
+    :to="`/player/${player.osu_id}`"
   >
     <!-- Background cover + overlay -->
     <div class="absolute inset-0 -z-10 opacity-50" v-if="player.cover_url">
@@ -16,7 +16,7 @@
     <div class="flex flex-col justify-center">
       <p class="text-lg font-medium">{{ player.name }}</p>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script lang="ts" setup>
@@ -29,11 +29,6 @@ type Player = Doc<"players">;
 const props = defineProps<{
   player: Player;
 }>();
-
-// ------ Handlers ------
-const handleRedirect = () => {
-  navigateTo(`/player/${props.player.osu_id}`);
-};
 </script>
 
 <style></style>
