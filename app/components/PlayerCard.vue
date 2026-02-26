@@ -7,13 +7,18 @@
         isDeleting ? 'pointer-events-none opacity-50 grayscale' : '',
       ]"
     >
-      <UAvatar :alt="playerName" :src="`https://a.ppy.sh/${osuId}`" />
+      <UAvatar
+        :alt="playerName"
+        :src="`https://a.ppy.sh/${osuId}`"
+        class="hover:cursor-pointer"
+        @click="handleRedirect"
+      />
       <span class="flex flex-col justify-center">
-        <p class="font-medium">{{ playerName }}</p>
+        <p class="font-medium hover:cursor-pointer" @click="handleRedirect">{{ playerName }}</p>
         <p class="text-muted -mt-1 text-xs">{{ osuId }}</p>
       </span>
       <span class="ml-auto flex items-center gap-1">
-        <UTooltip text="Refresh Username" :delay-duration="TOOLTIP.DELAY">
+        <UTooltip text="Refresh Player" :delay-duration="TOOLTIP.DELAY">
           <UButton
             :icon="ICONS.REFRESH"
             color="neutral"
@@ -125,6 +130,10 @@ const handleRefreshClick = async () => {
     currentCoverUrl: props.coverUrl,
     playerId: props._playerId,
   });
+};
+
+const handleRedirect = () => {
+  navigateTo(`/player/${props.osuId}`);
 };
 </script>
 
