@@ -5,11 +5,13 @@ export const createPlayer = mutation({
   args: {
     name: v.string(),
     osu_id: v.number(),
+    cover_url: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("players", {
       osu_id: args.osu_id,
       name: args.name,
+      cover_url: args.cover_url,
     });
   },
 });
@@ -33,10 +35,15 @@ export const getPlayer = query({
 export const updatePlayer = mutation({
   args: {
     id: v.id("players"),
-    name: v.string(),
+    name: v.optional(v.string()),
+    cover_url: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, { name: args.name });
+    const patch: any = {};
+    if (args.name !== undefined) patch.name = args.name;
+    if (args.cover_url !== undefined) patch.cover_url = args.cover_url;
+
+    await ctx.db.patch(args.id, patch);
   },
 });
 

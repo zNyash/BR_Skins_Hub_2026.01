@@ -35,7 +35,7 @@ const isOpen = defineModel<boolean>("open", { required: true });
 // ------ External Composables ------
 const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
-const { fetchPlayerUsername } = usePlayerNameRefresh();
+const { fetchPlayerInfo } = usePlayerNameRefresh();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
 
@@ -72,15 +72,20 @@ const handleCreatePlayer = () =>
       }
 
       let finalName = formState.value.name.trim();
+      let coverUrl = "";
+
       if (!finalName) {
-        statusMessage.value = "Fetching player username...";
-        finalName = await fetchPlayerUsername(formState.value.osu_id);
+        statusMessage.value = "Fetching player info...";
+        const info = await fetchPlayerInfo(formState.value.osu_id!);
+        finalName = info.username;
+        coverUrl = info.cover_url;
       }
 
       statusMessage.value = "Creating player...";
       await createPlayerMutation.mutate({
         name: finalName,
-        osu_id: formState.value.osu_id,
+        osu_id: formState.value.osu_id!,
+        cover_url: coverUrl,
       });
 
       toast.success({

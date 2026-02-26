@@ -31,6 +31,7 @@
           :_playerId="_playerId"
           :player-name="playerName"
           :osu-id="osuId"
+          :cover-url="coverUrl"
         />
 
         <UTooltip
@@ -61,6 +62,7 @@ import type { Id } from "~~/convex/_generated/dataModel";
 const props = defineProps<{
   playerName: string;
   osuId: number;
+  coverUrl?: string;
   _playerId: Id<"players">;
 }>();
 
@@ -120,6 +122,7 @@ const handleRefreshClick = async () => {
   await refreshPlayerName({
     osuId: props.osuId,
     currentUsername: props.playerName,
+    currentCoverUrl: props.coverUrl,
     playerId: props._playerId,
   });
 };

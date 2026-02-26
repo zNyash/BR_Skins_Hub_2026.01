@@ -17,6 +17,7 @@
           :key="player._id"
           :_playerId="player._id"
           :playerName="player.name"
+          :cover-url="player.cover_url"
           :osuId="player.osu_id"
         />
       </TransitionGroup>

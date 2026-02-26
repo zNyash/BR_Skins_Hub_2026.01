@@ -4,6 +4,7 @@ import type { Id } from "~~/convex/_generated/dataModel";
 interface RefreshPayload {
   osuId: number;
   currentUsername: string;
+  currentCoverUrl?: string;
   playerId: Id<"players">;
 }
 
@@ -13,8 +14,8 @@ export const usePlayerNameRefresh = () => {
 
   const isLoading = ref(false);
 
-  const fetchPlayerUsername = async (osuId: number) => {
-    return await $fetch<string>("/api/player/refresh", {
+  const fetchPlayerInfo = async (osuId: number) => {
+    return await $fetch("/api/player/refresh", {
       method: "GET",
       params: {
         osu_id: osuId,
@@ -22,16 +23,21 @@ export const usePlayerNameRefresh = () => {
     });
   };
 
-  const refreshPlayerName = async ({ osuId, currentUsername, playerId }: RefreshPayload) => {
+  const refreshPlayerName = async ({
+    osuId,
+    currentUsername,
+    currentCoverUrl,
+    playerId,
+  }: RefreshPayload) => {
     try {
       isLoading.value = true;
 
-      const newUsername = await fetchPlayerUsername(osuId);
+      const { username: newUsername, cover_url: newCoverUrl } = await fetchPlayerInfo(osuId);
 
-      // Only change the name on the database if it's different.
-      if (newUsername === currentUsername) {
+      // Only change on the database if it's different.
+      if (newUsername === currentUsername && newCoverUrl === currentCoverUrl) {
         toast.success({
-          title: "Username is up to date!",
+          title: "Player data is up to date!",
           description: `No changes detected for "${currentUsername}".`,
         });
 
@@ -41,12 +47,22 @@ export const usePlayerNameRefresh = () => {
       await updatePlayer({
         id: playerId,
         name: newUsername,
+        cover_url: newCoverUrl,
       });
 
-      toast.success({
-        title: "Username updated!",
-        description: `Changed from "${currentUsername}" to "${newUsername}"!`,
-      });
+      if (newUsername !== currentUsername) {
+        toast.success({
+          title: "Player data updated!",
+          description: `Changed from "${currentUsername}" to "${newUsername}"!`,
+        });
+      }
+
+      if (newCoverUrl !== currentCoverUrl) {
+        toast.success({
+          title: "Player cover updated!",
+          description: `The cover image for "${newUsername}" has been updated!`,
+        });
+      }
 
       return true;
     } catch (error) {
@@ -66,6 +82,6 @@ export const usePlayerNameRefresh = () => {
   return {
     isLoading: readonly(isLoading),
     refreshPlayerName,
-    fetchPlayerUsername,
+    fetchPlayerInfo,
   };
 };

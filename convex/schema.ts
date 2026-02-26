@@ -8,6 +8,7 @@ export default defineSchema({
   players: defineTable({
     name: v.string(),
     osu_id: v.number(),
+    cover_url: v.optional(v.string()),
   }).index("by_osu_id", ["osu_id"]),
 
   /* ----- */

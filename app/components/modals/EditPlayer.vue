@@ -49,6 +49,7 @@ const props = defineProps<{
   _playerId: Id<"players">;
   playerName: string;
   osuId: number;
+  coverUrl?: string;
 }>();
 const isOpen = defineModel<boolean>("open", { required: true });
 
@@ -112,6 +113,7 @@ const handleRefreshClick = async () => {
   await refreshPlayerName({
     osuId: props.osuId,
     currentUsername: props.playerName,
+    currentCoverUrl: props.coverUrl,
     playerId: props._playerId,
   });
 };
