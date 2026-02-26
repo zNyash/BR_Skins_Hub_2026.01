@@ -13,9 +13,17 @@
       </div>
     </section>
 
-    <section v-if="skins" class="grid w-full max-w-3xl grid-cols-2 gap-2">
-      <div v-for="skin in skins" :key="skin._id" class="">
-        <SkinCard :skin="skin" :disabled="true" />
+    <section v-if="skins" class="flex w-full max-w-3xl flex-col gap-2">
+      <UInput
+        placeholder="Search skins..."
+        class="w-60"
+        :icon="ICONS.SEARCH"
+        v-model="skinSearchQuery"
+      />
+      <div class="grid w-full grid-cols-2 gap-2">
+        <div v-for="skin in filteredSkins" :key="skin._id" class="">
+          <SkinCard :skin="skin" :disabled="true" />
+        </div>
       </div>
     </section>
   </div>
@@ -24,6 +32,8 @@
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
 import { useRouteParams } from "@vueuse/router";
+import { ICONS } from "~/types/icons";
+import Fuse from "fuse.js";
 
 // ------ Props & Emits ------
 const playerId = useRouteParams("playerId", 1, { transform: Number });
@@ -34,11 +44,26 @@ const { data: player, isPending: isPlayerPending } = useConvexQuery(api.players.
 });
 const { data: skins } = useConvexQuery(api.playerSkins.getSkinsByOsuId, { osu_id: playerId.value });
 
+// ------ Local State ------
+const skinSearchQuery = ref("");
+
 // ------ Computed ------
 const title = computed(() => {
   if (isPlayerPending.value) return "Loading player...";
   if (player.value) return `${player.value.name}'s Skins | BR Skins Hub`;
   return "Player Not Found | BR Skins Hub";
+});
+
+const filteredSkins = computed(() => {
+  if (!skins.value?.length) return [];
+  if (!skinSearchQuery.value) return skins.value;
+
+  const fuse = new Fuse(skins.value, {
+    keys: ["name", "osu_id"],
+    threshold: 0.5,
+  });
+
+  return fuse.search(skinSearchQuery.value).map((result) => result.item);
 });
 
 // ------ Lifecycle ------
