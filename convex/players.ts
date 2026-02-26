@@ -32,6 +32,17 @@ export const getPlayer = query({
   },
 });
 
+export const getPlayerByOsuId = query({
+  args: { osu_id: v.number() },
+  handler: async (ctx, args) => {
+    const players = await ctx.db
+      .query("players")
+      .withIndex("by_osu_id", (q) => q.eq("osu_id", args.osu_id))
+      .first();
+    return players;
+  },
+});
+
 export const updatePlayer = mutation({
   args: {
     id: v.id("players"),

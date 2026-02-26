@@ -16,3 +16,7 @@
     @apply border-primary/50;
   }
 }
+
+.squircle {
+  corner-shape: squircle;
+}

@@ -7,6 +7,7 @@
     "@types/node": "^25.0.10",
     "@uploadthing/nuxt": "^7.1.10",
     "@vueuse/core": "^14.1.0",
+    "@vueuse/router": "^14.2.1",
     "convex": "^1.31.6",
     "convex-nuxt": "0.1.5",
     "fuse.js": "^7.1.0",

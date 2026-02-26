@@ -1,6 +1,7 @@
 <template>
   <div
     class="bg-muted hover:ring-primary relative isolate flex w-full items-center gap-2 overflow-hidden rounded-md p-2 shadow-lg ring ring-transparent transition-all duration-150 hover:cursor-pointer"
+    @click="handleRedirect"
   >
     <!-- Background cover + overlay -->
     <div class="absolute inset-0 -z-10 opacity-50" v-if="player.cover_url">
@@ -26,6 +27,10 @@ type Player = Doc<"players">;
 const props = defineProps<{
   player: Player;
 }>();
+
+const handleRedirect = () => {
+  navigateTo(`/player/${props.player.osu_id}`);
+};
 </script>
 
 <style>

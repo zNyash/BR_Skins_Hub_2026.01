@@ -2,13 +2,31 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getSkinsByPlayer = query({
-  args: { player_id: v.optional(v.id("players")) },
+  args: { player_id: v.id("players") },
   handler: async (ctx, args) => {
-    if (!args.player_id) return [];
+    const relations = await ctx.db
+      .query("playerSkins")
+      .withIndex("by_player", (q) => q.eq("player_id", args.player_id))
+      .collect();
+
+    const skins = await Promise.all(relations.map((r) => ctx.db.get(r.skin_id)));
+    return skins.filter((s) => s !== null);
+  },
+});
+
+export const getSkinsByOsuId = query({
+  args: { osu_id: v.number() },
+  handler: async (ctx, args) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_osu_id", (q) => q.eq("osu_id", args.osu_id))
+      .first();
+
+    if (!player) return [];
 
     const relations = await ctx.db
       .query("playerSkins")
-      .withIndex("by_player", (q) => q.eq("player_id", args.player_id as any))
+      .withIndex("by_player", (q) => q.eq("player_id", player._id))
       .collect();
 
     const skins = await Promise.all(relations.map((r) => ctx.db.get(r.skin_id)));
