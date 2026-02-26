@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full flex-col items-center">
-    <section class="flex w-full max-w-2xl flex-col items-center gap-4">
+    <section class="flex w-full max-w-2xl flex-col items-center gap-4 pb-48">
       <div class="flex w-full">
         <UInput
           v-model="inputSearch"
@@ -10,9 +10,11 @@
         />
       </div>
 
-      <div class="grid w-full grid-cols-2 gap-2">
-        <LoadingPage :isLoading="isLoadingSkins" />
+      <div v-if="isLoadingSkins" class="grid w-full grid-cols-2 gap-2">
+        <USkeleton v-for="n in 8" :key="n" class="h-[259.75px] w-full" />
+      </div>
 
+      <div v-else-if="filteredSkins.length" class="grid w-full grid-cols-2 gap-2">
         <SkinCard v-for="skin in filteredSkins" :key="skin._id" :skin="skin" />
       </div>
     </section>
