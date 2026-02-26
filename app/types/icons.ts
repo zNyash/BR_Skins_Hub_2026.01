@@ -1,5 +1,6 @@
 const ICONS = {
   ADD: "lucide:plus",
+  BRUSH: "lucide:brush",
   CLOSE: "lucide:x",
   DASHBOARD: "lucide:layout-dashboard",
   DELETE: "lucide:trash-2",
@@ -17,6 +18,7 @@ const ICONS = {
   SUCCESS: "lucide:circle-check",
   UPLOAD: "lucide:upload",
   USER: "lucide:user",
+  USERS: "lucide:users",
   USER_COG: "lucide:user-cog",
   WARNING: "lucide:triangle-alert",
 };

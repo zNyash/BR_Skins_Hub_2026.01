@@ -25,9 +25,14 @@ const { isSignedIn } = useAuth();
 const menuItems = computed<NavigationMenuItem[]>(() => {
   const items: NavigationMenuItem[] = [
     {
-      label: "Home",
+      label: "Players",
       to: "/",
-      icon: ICONS.HOME,
+      icon: ICONS.USERS,
+    },
+    {
+      label: "Skins",
+      to: "/skins",
+      icon: ICONS.BRUSH,
     },
   ];
 
