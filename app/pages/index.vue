@@ -42,13 +42,18 @@ const { data: playersList } = useConvexQuery(api.players.listPlayers);
 const inputSearch = ref("");
 
 // ------ Computed ------
-const filteredPlayers = computed(() => {
+const sortedPlayers = computed(() => {
   if (!playersList.value) return [];
-  if (!inputSearch.value) return playersList.value;
+  return [...playersList.value].sort((a, b) => a.name.localeCompare(b.name));
+});
 
-  const fuse = new Fuse(playersList.value, {
-    keys: ["name", "osu_id"] as (keyof (typeof playersList.value)[0])[],
-    threshold: 0.4,
+const filteredPlayers = computed(() => {
+  if (!sortedPlayers.value?.length) return [];
+  if (!inputSearch.value) return sortedPlayers.value;
+
+  const fuse = new Fuse(sortedPlayers.value, {
+    keys: ["name", "osu_id"],
+    threshold: 0.3,
   });
 
   return fuse.search(inputSearch.value).map((result) => result.item);
