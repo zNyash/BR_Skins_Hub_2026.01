@@ -1,5 +1,5 @@
 <template>
-  <UContextMenu :items="menuItems">
+  <UContextMenu :items="menuItems" :disabled="isContextDisabledComputed">
     <div class="bg-muted group/card relative w-full overflow-hidden rounded-lg">
       <ImageSlider :images="skin.preview_images" />
       <!-- Download Button -->
@@ -7,7 +7,7 @@
         :icon="ICONS.DOWNLOAD"
         :href="skin.download_url"
         target="_blank"
-        @click="processDownload"
+        @click="handleDownload"
         variant="soft"
         color="neutral2"
         class="absolute top-1 right-1 opacity-0 transition-opacity duration-150 group-hover/card:opacity-100"
@@ -66,7 +66,6 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from "@nuxt/ui";
 import { formatTimeAgo } from "@vueuse/core";
-import Skins from "~/pages/dashboard/skins.vue";
 import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
@@ -78,10 +77,12 @@ type Skin = Doc<"skins">;
 // ------ Props & Emits ------
 const props = defineProps<{
   skin: Skin;
+  disabled?: boolean;
 }>();
 
 // ------ External Composables ------
 const toast = useToast();
+const { isSignedIn } = useAuth();
 const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
 const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 
@@ -89,27 +90,50 @@ const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 const isLoading = ref(false);
 const isModalOpen = ref(false);
 
-const menuItems = ref<ContextMenuItem[]>([
-  {
-    label: "Edit Skin",
-    icon: ICONS.EDIT,
-    color: "info",
-    onSelect: openEditModal,
-  },
-  {
-    label: "Delete Skin",
-    icon: ICONS.DELETE,
-    color: "error",
-    onSelect: processSkinDeletion,
-  },
-]);
+// ------ Computed ------
+const isContextDisabledComputed = computed(() => {
+  // 1. If the prop was explicitly passed (it's not undefined), prioritize it.
+  // We check undefined because 'false' is a valid value we want to respect.
+  if (props.disabled !== undefined) {
+    return props.disabled;
+  }
+
+  // 2. Otherwise (prop not passed), use default logic:
+  // Disabled by default (true), unless signed in (false).
+  return !isSignedIn.value;
+});
+
+const menuItems = computed(() => {
+  const items: ContextMenuItem[] = [];
+
+  // Just for security. The buttons won't show if the user isn't signed in anyway
+  // But this ensures that even if somehow they can see the buttons, they won't work unless they're signed in.
+  if (isSignedIn.value) {
+    items.push(
+      {
+        label: "Edit Skin",
+        icon: ICONS.EDIT,
+        color: "info",
+        onSelect: openEditModal,
+      },
+      {
+        label: "Delete Skin",
+        icon: ICONS.DELETE,
+        color: "error",
+        onSelect: handleSkinDeletion,
+      },
+    );
+  }
+  return items;
+});
 
 // ------ Actions ------
 function openEditModal() {
   isModalOpen.value = true;
 }
 
-async function processSkinDeletion() {
+// ------ Handlers ------
+async function handleSkinDeletion() {
   try {
     isLoading.value = true;
 
@@ -138,7 +162,7 @@ async function processSkinDeletion() {
   }
 }
 
-async function processDownload() {
+async function handleDownload() {
   try {
     isLoading.value = true;
 
