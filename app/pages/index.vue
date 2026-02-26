@@ -35,7 +35,6 @@
 </template>
 
 <script lang="ts" setup>
-import { useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";

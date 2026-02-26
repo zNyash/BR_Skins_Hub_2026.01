@@ -10,7 +10,7 @@
     </div>
 
     <div>
-      <img :src="`https://a.ppy.sh/${player.osu_id}`" alt="" class="pfp size-11" />
+      <img :src="`https://a.ppy.sh/${player.osu_id}`" alt="" class="squircle size-11 rounded-xl" />
     </div>
 
     <div class="flex flex-col justify-center">
@@ -36,14 +36,4 @@ const handleRedirect = () => {
 };
 </script>
 
-<style>
-.pfp {
-  border-radius: 0.5rem;
-}
-@supports (corner-shape: squircle) {
-  .pfp {
-    corner-shape: squircle;
-    border-radius: 2rem;
-  }
-}
-</style>
+<style></style>

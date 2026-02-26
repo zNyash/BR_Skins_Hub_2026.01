@@ -1,7 +1,7 @@
 <template>
   <div>
     <section v-if="player" class="flex flex-col items-center gap-1">
-      <div class="squircle size-24 overflow-hidden rounded-[50%]">
+      <div class="squircle size-24 overflow-hidden rounded-3xl">
         <img :src="`https://a.ppy.sh/${playerId}`" alt="" class="size-full object-cover" />
       </div>
       <div>

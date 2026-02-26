@@ -17,6 +17,9 @@
   }
 }
 
-.squircle {
-  corner-shape: squircle;
+@supports (corner-shape: squircle) {
+  .squircle {
+    corner-shape: squircle;
+    border-radius: 50% !important;
+  }
 }
