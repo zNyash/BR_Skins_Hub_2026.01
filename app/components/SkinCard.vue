@@ -1,6 +1,6 @@
 <template>
   <UContextMenu :items="menuItems" :disabled="isContextDisabledComputed">
-    <div class="bg-muted group/card relative w-full overflow-hidden rounded-lg">
+    <div class="bg-muted relative w-full overflow-hidden rounded-lg">
       <ImageSlider :images="skin.preview_images" />
       <!-- Download Button -->
       <UButton
@@ -10,7 +10,7 @@
         @click="handleDownload"
         variant="soft"
         color="neutral2"
-        class="absolute top-1 right-1 opacity-0 transition-opacity duration-150 group-hover/card:opacity-100"
+        class="absolute top-1 right-1 transition-opacity duration-150"
       />
 
       <!-- Information Section -->
