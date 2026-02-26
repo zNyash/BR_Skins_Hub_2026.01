@@ -9,6 +9,7 @@
     "@vueuse/core": "^14.1.0",
     "convex": "^1.31.6",
     "convex-nuxt": "0.1.5",
+    "fuse.js": "^7.1.0",
     "nuxt": "^4.3.0",
     "osu-api-extended": "^3.1.8",
     "tailwindcss": "^4.1.18",

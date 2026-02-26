@@ -7,6 +7,7 @@ const ICONS = {
   EDIT: "lucide:square-pen",
   ERROR: "lucide:circle-x",
   FOLDER: "lucide:folder",
+  FROWN: "lucide:frown",
   HOME: "lucide:house",
   LOADING: "svg-spinners:ring-resize",
   LOCK: "lucide:lock",
