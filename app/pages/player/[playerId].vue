@@ -37,7 +37,7 @@ const title = computed(() => {
   return "Player Not Found | BR Skins Hub";
 });
 
-// ------ Other ------
+// ------ Lifecycle ------
 useHead(() => ({
   title: title.value,
 }));
