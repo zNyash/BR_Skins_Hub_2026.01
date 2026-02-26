@@ -34,6 +34,12 @@ const { data: playersList, isPending: playersLoading } = useConvexQuery(api.play
 
 // ------ Local State ------
 const isCreatePlayerOpen = ref(false);
+
+// ------ Lifecycle ------
+useSeoMeta({
+  title: "Manage Players | BR Skins Hub Dashboard",
+  ogTitle: "Manage Players | BR Skins Hub Dashboard",
+});
 </script>
 
 <style scoped>

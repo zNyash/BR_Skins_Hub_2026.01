@@ -115,6 +115,12 @@ async function handleLogin() {
     isLoading.value = false;
   }
 }
+
+// ------ Lifecycle ------
+useSeoMeta({
+  title: "Admin Login | BR Skins Hub Dashboard",
+  ogTitle: "Admin Login | BR Skins Hub Dashboard",
+});
 </script>
 
 <style></style>

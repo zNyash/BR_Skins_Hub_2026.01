@@ -67,9 +67,11 @@ const filteredSkins = computed(() => {
 });
 
 // ------ Lifecycle ------
-useHead(() => ({
-  title: title.value,
-}));
+useSeoMeta({
+  title: () => title.value,
+  ogTitle: () => title.value,
+  ogImage: `https://a.ppy.sh/${playerId.value}`,
+});
 </script>
 
 <style></style>

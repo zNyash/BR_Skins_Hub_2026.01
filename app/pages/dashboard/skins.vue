@@ -23,6 +23,12 @@ const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.
 
 // ------ Local State ------
 const isCreateSkinOpen = ref(false);
+
+// ------ Lifecycle ------
+useSeoMeta({
+  title: "Manage Skins | BR Skins Hub Dashboard",
+  ogTitle: "Manage Skins | BR Skins Hub Dashboard",
+});
 </script>
 
 <style></style>

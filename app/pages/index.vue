@@ -62,4 +62,10 @@ const filteredPlayers = computed(() => {
 
   return fuse.search(inputSearch.value).map((result) => result.item);
 });
+
+// ------ Lifecycle ------
+useSeoMeta({
+  title: "Players List | BR Skins Hub",
+  ogTitle: "Players List | BR Skins Hub",
+});
 </script>
