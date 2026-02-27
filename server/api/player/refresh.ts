@@ -19,8 +19,5 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw new Error("User not found");
   }
-  return {
-    username: user.username,
-    cover_url: user.cover.url,
-  };
+  return user;
 });

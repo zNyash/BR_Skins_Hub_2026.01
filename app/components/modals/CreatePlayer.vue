@@ -3,9 +3,6 @@
     <template #body>
       <div class="flex w-full flex-col gap-4">
         <div class="flex w-full flex-col gap-2" @keydown.enter="handleCreatePlayer">
-          <NFormField label="Player Username">
-            <UInput placeholder="Name" v-model="formState.name" class="w-full" />
-          </NFormField>
           <NFormField label="Player ID from osu!" required>
             <UInput type="number" :default-value="0" v-model="formState.osu_id" class="w-full" />
           </NFormField>
@@ -25,7 +22,6 @@ import { api } from "~~/convex/_generated/api";
 
 // ------ Local Types & Defaults ------
 const getDefaultFormState = () => ({
-  name: "",
   osu_id: undefined,
 });
 
@@ -35,7 +31,7 @@ const isOpen = defineModel<boolean>("open", { required: true });
 // ------ External Composables ------
 const toast = useAppToast();
 const createPlayerMutation = useConvexMutation(api.players.createPlayer);
-const { fetchPlayerInfo } = usePlayerNameRefresh();
+const { fetchPlayerInfo } = usePlayerSync();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
 
@@ -62,7 +58,7 @@ const closeModal = () => {
 const handleCreatePlayer = () =>
   handleSubmit(
     async () => {
-      statusMessage.value = "Checking changes...";
+      statusMessage.value = "Validating osu! player ID...";
       if (!formState.value.osu_id || formState.value.osu_id <= 0) {
         toast.warning({
           title: "Invalid Player ID",
@@ -71,25 +67,27 @@ const handleCreatePlayer = () =>
         return false;
       }
 
-      let finalName = formState.value.name.trim();
-      let coverUrl = "";
+      // Always fetch player info to ensure data consistency
+      statusMessage.value = "Fetching player info...";
+      const { data, error } = await fetchPlayerInfo(formState.value.osu_id!);
 
-      if (!finalName) {
-        statusMessage.value = "Fetching player info...";
-        const info = await fetchPlayerInfo(formState.value.osu_id!);
-        finalName = info.username;
-        coverUrl = info.cover_url;
+      if (error || !data) {
+        toast.error({
+          title: "Failed to fetch player info",
+          description: error,
+        });
+        return false;
       }
 
       statusMessage.value = "Creating player...";
       await createPlayerMutation.mutate({
-        name: finalName,
+        name: data.username,
         osu_id: formState.value.osu_id!,
-        cover_url: coverUrl,
+        cover_url: data.cover.url || "",
       });
 
       toast.success({
-        title: `Created player "${finalName}" successfully!`,
+        title: `Created player "${data.username}" successfully!`,
       });
 
       closeModal();
