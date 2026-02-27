@@ -1,28 +1,25 @@
 <template>
   <div class="flex flex-col gap-2">
-    <!-- Search Bar -->
-    <UInput
-      v-model="searchQuery"
-      :icon="ICONS.SEARCH"
-      placeholder="Search skins..."
-      size="sm"
-      :ui="{ trailing: 'pe-1' }"
-    >
-      <template v-if="searchQuery.length" #trailing>
-        <UButton
-          size="sm"
-          color="neutral"
-          variant="link"
-          :icon="ICONS.CLOSE"
-          @click="searchQuery = ''"
-        />
-      </template>
-    </UInput>
+    <div class="flex justify-between">
+      <!-- Search Bar -->
+      <UInput
+        v-model="searchQuery"
+        :icon="ICONS.SEARCH"
+        placeholder="Search skins..."
+        autofocus
+        :ui="{ trailing: 'pe-1' }"
+        class="search-input-default-size"
+      >
+        <template v-if="searchQuery.length" #trailing>
+          <UButton color="neutral" variant="link" :icon="ICONS.CLOSE" @click="searchQuery = ''" />
+        </template>
+      </UInput>
 
-    <!-- Header/Stats -->
-    <div class="flex items-center justify-between text-xs">
-      <span class="text-muted">{{ modelValue.length }} selected</span>
-      <span class="text-muted">{{ skins.length - modelValue.length }} available</span>
+      <!-- Header/Stats -->
+      <div class="flex flex-col items-end justify-center text-xs">
+        <span class="text-muted">{{ modelValue.length }} selected</span>
+        <span class="text-muted">{{ skins.length - modelValue.length }} available</span>
+      </div>
     </div>
 
     <!-- Scrollable Grid -->
