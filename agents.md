@@ -68,9 +68,11 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
 ### 5. Composables vs Components
 
 - **Composables**: Should generally handle business logic and return state/methods.
+
 ### 6. Vue 3.5+ Modern Syntax
 
 - **Props Destructuring**: Use reactive props destructuring. Do **NOT** use `withDefaults` or `props.x`.
+
   ```typescript
   // ✅ DO:
   const { title = "Default", count } = defineProps<{ title?: string; count: number }>();
@@ -80,10 +82,31 @@ type Skin = (typeof api.skins.listSkins._returnType)[0];
   const props = withDefaults(defineProps<Props>(), { ... });
   console.log(props.title);
   ```
+
 - **Models**: Use `defineModel` for all v-model bindings.
   ```typescript
   const modelValue = defineModel<string>({ required: true });
   ```
+
+### 7. Workflow: Adding a New Player Field
+
+When adding a new field to the `players` table, you **MUST** update all of the following files to ensure consistency:
+
+1.  **Schema Definition** (`convex/schema.ts`):
+    - Add the new field to the `players` table definition.
+    - Example: `new_field: v.optional(v.string())`.
+
+2.  **Backend Mutations** (`convex/players.ts`):
+    - **`createPlayer`**: Add the field to `args` and the `insert` payload.
+    - **`updatePlayer`**: Add the field to `args` (usually optional) and the `patch` logic.
+
+3.  **Sync Logic** (`app/composables/usePlayerSync.ts`):
+    - **`syncPlayer`**: Add logic to compare the old value vs. the new value from the API.
+    - Include the new field in the `updatePlayerMutation` call if it has changed.
+
+4.  **Frontend Modals**:
+    - **`CreatePlayer.vue`**: Add the input field to the form and include it in the `createPlayer` mutation.
+    - **`EditPlayer.vue`**: Add the input field, update the local form state, and include it in the `updatePlayer` mutation.
 
 ---
 
@@ -117,7 +140,8 @@ Declare **types, interfaces, enums, and default values** that are **local to the
 
 **Examples:**
 **Use Reactive Props Destructuring** (Vue 3.5+). Do NOT use `withDefaults`.
-- 
+
+-
 - `type LocalFormState`
 - `interface UploadOptions`
 - `const DEFAULT_STATUS = "idle"`
