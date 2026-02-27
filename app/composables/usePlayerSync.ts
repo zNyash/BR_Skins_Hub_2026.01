@@ -47,12 +47,21 @@ export const usePlayerSync = () => {
 
       const hasNameChanged = latestData.username !== player.name;
       const hasCoverChanged = latestData.cover?.url !== player.cover_url;
+      console.log("Comparing previous usernames:", {
+        current: player.previous_usernames,
+        latest: latestData.previous_usernames,
+        current_str: JSON.stringify(player.previous_usernames),
+        latest_str: JSON.stringify(latestData.previous_usernames),
+      });
+      const hasPreviousUsernamesChanged =
+        JSON.stringify(player.previous_usernames) !== JSON.stringify(latestData.previous_usernames);
 
-      if (hasNameChanged || hasCoverChanged) {
+      if (hasNameChanged || hasCoverChanged || hasPreviousUsernamesChanged) {
         await updatePlayerMutation.mutate({
           id: player._id,
           name: latestData.username,
           cover_url: latestData.cover?.url,
+          previous_usernames: latestData.previous_usernames,
         });
 
         return { successMessage: "Player info updated successfully!", errorMessage: "" };

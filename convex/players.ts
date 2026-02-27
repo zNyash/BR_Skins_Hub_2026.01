@@ -6,12 +6,14 @@ export const createPlayer = mutation({
     name: v.string(),
     osu_id: v.number(),
     cover_url: v.optional(v.string()),
+    previous_usernames: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("players", {
       osu_id: args.osu_id,
       name: args.name,
       cover_url: args.cover_url,
+      previous_usernames: args.previous_usernames || [],
     });
   },
 });
@@ -48,11 +50,13 @@ export const updatePlayer = mutation({
     id: v.id("players"),
     name: v.optional(v.string()),
     cover_url: v.optional(v.string()),
+    previous_usernames: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const patch: any = {};
     if (args.name !== undefined) patch.name = args.name;
     if (args.cover_url !== undefined) patch.cover_url = args.cover_url;
+    if (args.previous_usernames !== undefined) patch.previous_usernames = args.previous_usernames;
 
     await ctx.db.patch(args.id, patch);
   },

@@ -52,10 +52,7 @@ const getDefaults = () => ({
 
 // ------ Props & Emits ------
 const props = defineProps<{
-  _playerId: Id<"players">;
-  playerName: string;
-  osuId: number;
-  coverUrl?: string;
+  player: Doc<"players">;
 }>();
 const isOpen = defineModel<boolean>("open", { required: true });
 
@@ -71,7 +68,7 @@ const { data: allSkins } = useConvexQuery(api.skins.listSkins, {});
 const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery(
   api.playerSkins.getSkinsByPlayer,
   {
-    player_id: props._playerId,
+    player_id: props.player._id,
   },
 );
 
@@ -80,7 +77,7 @@ const { data: playerSkinsRel, isPending: isLoadingPlayerSkins } = useConvexQuery
 
 // ------ Watchers ------
 watch(
-  () => props.playerName,
+  () => props.player.name,
   (newName) => {
     formState.value.name = newName;
   },
@@ -104,7 +101,7 @@ watch(
     if (!newVal) {
       resetForm();
       // Setting formState back to props values because the resetForm sets to empty values based on getDefaults
-      formState.value.name = props.playerName;
+      formState.value.name = props.player.name;
       statusMessage.value = "";
     }
   },
@@ -117,21 +114,16 @@ const closeModal = () => {
 
 // ------ Handlers ------
 const handleRefreshClick = async () => {
-  const success = await syncPlayer({
-    _id: props._playerId,
-    name: props.playerName,
-    osu_id: props.osuId,
-    cover_url: props.coverUrl,
-  } as Doc<"players">);
+  const { successMessage, errorMessage } = await syncPlayer(props.player);
 
-  if (success) {
+  if (successMessage) {
     toast.success({
-      title: `Player "${props.playerName}" refreshed successfully!`,
+      title: successMessage,
     });
   } else {
     toast.error({
-      title: `Failed to refresh player "${props.playerName}".`,
-      description: "Please try again later.",
+      title: `Failed to refresh player "${props.player.name}".`,
+      description: errorMessage,
     });
   }
 };
@@ -141,7 +133,7 @@ const handleSaveChanges = () =>
     async () => {
       statusMessage.value = "Checking changes...";
 
-      const hasNameChanged = formState.value.name.trim() !== props.playerName;
+      const hasNameChanged = formState.value.name.trim() !== props.player.name;
 
       // Check if skins changed
       const currentIds = new Set<Id<"skins">>(formState.value.skinIds);
@@ -174,7 +166,7 @@ const handleSaveChanges = () =>
         statusMessage.value = "Updating username...";
         promises.push(
           updatePlayerMutation.mutate({
-            id: props._playerId,
+            id: props.player._id,
             name: formState.value.name,
           }),
         );
@@ -184,7 +176,7 @@ const handleSaveChanges = () =>
         statusMessage.value = "Updating skins...";
         promises.push(
           updateSkinsMutation.mutate({
-            player_id: props._playerId,
+            player_id: props.player._id,
             skin_ids: Array.from(currentIds),
           }),
         );

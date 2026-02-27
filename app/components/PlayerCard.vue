@@ -7,18 +7,18 @@
         isDeleting ? 'pointer-events-none opacity-50 grayscale' : '',
       ]"
     >
-      <NuxtLink :to="`/player/${osuId}`">
+      <NuxtLink :to="`/player/${player.osu_id}`">
         <UAvatar
-          :alt="playerName"
-          :src="`https://a.ppy.sh/${osuId}`"
+          :alt="player.name"
+          :src="`https://a.ppy.sh/${player.osu_id}`"
           class="hover:cursor-pointer"
         />
       </NuxtLink>
       <span class="flex flex-col justify-center">
-        <NuxtLink :to="`/player/${osuId}`">
-          <p class="font-medium hover:cursor-pointer">{{ playerName }}</p>
+        <NuxtLink :to="`/player/${player.osu_id}`">
+          <p class="font-medium hover:cursor-pointer">{{ player.name }}</p>
         </NuxtLink>
-        <p class="text-muted -mt-1 text-xs">{{ osuId }}</p>
+        <p class="text-muted -mt-1 text-xs">{{ player.osu_id }}</p>
       </span>
       <span class="ml-auto flex items-center gap-1">
         <UTooltip text="Refresh Player" :delay-duration="TOOLTIP.DELAY">
@@ -34,13 +34,7 @@
         <UTooltip text="Edit Player" :delay-duration="TOOLTIP.DELAY">
           <UButton icon="lucide:edit" variant="ghost" color="info" @click="isEditing = true" />
         </UTooltip>
-        <ModalsEditPlayer
-          v-model:open="isEditing"
-          :_playerId="_playerId"
-          :player-name="playerName"
-          :osu-id="osuId"
-          :cover-url="coverUrl"
-        />
+        <ModalsEditPlayer v-model:open="isEditing" :player="player" />
 
         <UTooltip
           :text="confirmDelete ? 'Click again to confirm' : 'Delete Player'"
@@ -68,10 +62,7 @@ import type { Doc, Id } from "~~/convex/_generated/dataModel";
 
 // ------ Props & Emits ------
 const props = defineProps<{
-  playerName: string;
-  osuId: number;
-  coverUrl?: string;
-  _playerId: Id<"players">;
+  player: Doc<"players">;
 }>();
 
 // ------ External Composables ------
@@ -90,17 +81,17 @@ const confirmDelete = ref(false);
 const performPlayerDelete = async () => {
   try {
     isDeleting.value = true;
-    await deletePlayerMutation.mutate({ player_id: props._playerId });
+    await deletePlayerMutation.mutate({ player_id: props.player._id });
 
     updateSkinsMutation.mutate({
-      player_id: props._playerId,
+      player_id: props.player._id,
       skin_ids: [],
     });
 
     hasBeenDeleted.value = true;
 
     toast.success({
-      title: `Deleted the player "${props.playerName}" successfully!`,
+      title: `Deleted the player "${props.player.name}" successfully!`,
     });
   } catch (error) {
     console.error("Error deleting player:", error);
@@ -127,12 +118,7 @@ const handleDeleteClick = () => {
 };
 
 const handleRefreshClick = async () => {
-  const { successMessage, errorMessage } = await syncPlayer({
-    _id: props._playerId,
-    name: props.playerName,
-    osu_id: props.osuId,
-    cover_url: props.coverUrl,
-  } as Doc<"players">);
+  const { successMessage, errorMessage } = await syncPlayer(props.player);
 
   if (successMessage) {
     toast.success({
@@ -140,7 +126,7 @@ const handleRefreshClick = async () => {
     });
   } else {
     toast.error({
-      title: `Failed to refresh player "${props.playerName}".`,
+      title: `Failed to refresh player "${props.player.name}".`,
       description: errorMessage,
     });
   }

@@ -25,10 +25,7 @@
           v-if="filteredPlayers"
           v-for="player in filteredPlayers"
           :key="player._id"
-          :_playerId="player._id"
-          :playerName="player.name"
-          :cover-url="player.cover_url"
-          :osuId="player.osu_id"
+          :player="player"
         />
       </TransitionGroup>
     </div>

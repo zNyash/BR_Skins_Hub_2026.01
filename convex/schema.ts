@@ -9,6 +9,7 @@ export default defineSchema({
     name: v.string(),
     osu_id: v.number(),
     cover_url: v.optional(v.string()),
+    previous_usernames: v.optional(v.array(v.string())),
   }).index("by_osu_id", ["osu_id"]),
 
   /* ----- */
