@@ -14,7 +14,15 @@
           />
         </a>
         <div>
-          <h1 class="text-2xl font-medium">{{ player.name }}</h1>
+          <UPopover mode="hover">
+            <h1 class="isHovering cursor-help text-2xl font-medium">{{ player.name }}</h1>
+
+            <template #content>
+              <span class="popover-content gap-2 select-text!">
+                {{ player.previous_usernames?.join(", ") }}
+              </span>
+            </template>
+          </UPopover>
         </div>
       </span>
     </section>
