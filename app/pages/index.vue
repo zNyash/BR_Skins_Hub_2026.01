@@ -52,7 +52,11 @@ const filteredPlayers = computed(() => {
   if (!inputSearch.value) return sortedPlayers.value;
 
   const fuse = new Fuse(sortedPlayers.value, {
-    keys: ["name", "osu_id"],
+    keys: [
+      "name",
+      "osu_id",
+      "previous_usernames",
+    ] satisfies (keyof (typeof sortedPlayers.value)[number])[],
     threshold: 0.3,
   });
 
