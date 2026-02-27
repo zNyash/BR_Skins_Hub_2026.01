@@ -12,9 +12,7 @@ export default defineEventHandler(async (event) => {
     client_secret: useRuntimeConfig().osuClientSecret,
     scopes: ["public"],
   });
-
-  const users = await v2.users.lookup({ ids: [Number(osu_id)] });
-  const user = users[0];
+  const user = await v2.users.details({ user: Number(osu_id), key: "id" });
 
   if (!user) {
     throw new Error("User not found");

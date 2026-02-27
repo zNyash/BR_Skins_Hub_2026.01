@@ -1,9 +1,9 @@
-import type { UsersLookupResponse } from "osu-api-extended/dist/types/v2/users_lookup";
+import type { UsersDetailsResponse } from "osu-api-extended/dist/types/v2/users_details";
 import { api } from "~~/convex/_generated/api";
 import type { Doc } from "~~/convex/_generated/dataModel";
 
 type PlayerFetchResult = {
-  data: UsersLookupResponse | null;
+  data: UsersDetailsResponse | null;
   error: string;
 };
 type SyncPlayerResult = {
@@ -18,7 +18,7 @@ export const usePlayerSync = () => {
   async function fetchPlayerInfo(osuId: number): Promise<PlayerFetchResult> {
     try {
       isLoading.value = true;
-      const response = await $fetch<UsersLookupResponse>(`/api/player/refresh`, {
+      const response = await $fetch<UsersDetailsResponse>(`/api/player/refresh`, {
         method: "GET",
         params: { osu_id: osuId },
       });
