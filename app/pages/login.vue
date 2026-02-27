@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-[50vh] w-full flex-col items-center justify-center gap-6">
+  <div class="flex w-full flex-col items-center gap-6">
     <!-- Manual Sign In Form -->
     <SignedOut>
       <UCard class="w-full max-w-sm shadow-xl">

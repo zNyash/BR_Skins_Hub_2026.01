@@ -3,15 +3,7 @@
     <nav
       class="border-muted bg-mantle/25 fixed top-0 z-50 flex w-full items-center justify-center border-b backdrop-blur-3xl"
     >
-      <div class="flex w-full max-w-4xl items-center justify-between">
-        <NuxtLink to="/">
-          <p class="text-lg font-semibold">BR Skins Hub</p>
-        </NuxtLink>
-        <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </div>
+      <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
     </nav>
 
     <UMain class="mt-24 mb-24 flex h-full w-full justify-center">
@@ -66,6 +58,12 @@
           </span>
         </template>
       </UPopover>
+
+      <template #right>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </template>
     </UFooter>
   </UApp>
 </template>
