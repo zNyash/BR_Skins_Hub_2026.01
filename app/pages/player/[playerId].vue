@@ -1,16 +1,22 @@
 <template>
   <div class="flex w-full flex-col items-center gap-12">
-    <section v-if="player" class="flex flex-col items-center gap-1">
-      <a
-        class="squircle size-24 overflow-hidden rounded-3xl"
-        :href="`https://osu.ppy.sh/users/${player.osu_id}`"
-        target="_blank"
-      >
-        <img :src="`https://a.ppy.sh/${playerId}`" alt="" class="size-full object-cover" />
-      </a>
-      <div>
-        <h1 class="text-lg font-medium">{{ player.name }}</h1>
+    <section v-if="player" class="flex w-full flex-col items-center gap-1">
+      <div class="relative w-full max-w-4xl">
+        <div class="bg-background/0 from-default absolute inset-0 z-10 bg-linear-to-t to-50%" />
+        <img :src="player.cover_url" alt="" class="w-full rounded-xl object-cover" />
       </div>
+      <span class="z-10 -mt-24 flex flex-col items-center">
+        <a class="size-26" :href="`https://osu.ppy.sh/users/${player.osu_id}`" target="_blank">
+          <img
+            :src="`https://a.ppy.sh/${playerId}`"
+            alt=""
+            class="squircle size-full rounded-3xl object-cover drop-shadow-lg"
+          />
+        </a>
+        <div>
+          <h1 class="text-2xl font-medium">{{ player.name }}</h1>
+        </div>
+      </span>
     </section>
 
     <section v-if="skins" class="flex w-full max-w-3xl flex-col gap-2">
