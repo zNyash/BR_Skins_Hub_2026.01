@@ -15,7 +15,12 @@
       </div>
 
       <div v-else-if="filteredSkins.length" class="grid w-full grid-cols-2 gap-2">
-        <SkinCard v-for="skin in filteredSkins" :key="skin._id" :skin="skin" />
+        <SkinCard
+          v-for="skin in filteredSkins"
+          :key="skin._id"
+          :skin="skin"
+          :disabled="!isSignedIn"
+        />
       </div>
     </section>
   </div>
@@ -26,6 +31,8 @@ import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import { useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
+
+const { isSignedIn } = useAuth();
 
 // ------ External Composables ------
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
