@@ -14,7 +14,7 @@
           />
         </a>
         <div>
-          <UPopover mode="hover">
+          <UPopover mode="hover" v-if="player.previous_usernames?.length">
             <h1 class="isHovering cursor-help text-2xl font-medium">{{ player.name }}</h1>
 
             <template #content>
@@ -23,6 +23,7 @@
               </span>
             </template>
           </UPopover>
+          <h1 v-else class="isHovering cursor-help text-2xl font-medium">{{ player.name }}</h1>
         </div>
       </span>
     </section>
