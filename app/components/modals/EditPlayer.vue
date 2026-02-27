@@ -17,7 +17,7 @@
                 color="neutral"
                 variant="subtle"
                 @click="handleRefreshClick"
-                :loading="isRefreshingUsername"
+                :loading="isSyncing"
               />
             </UFieldGroup>
           </NFormField>
@@ -42,7 +42,7 @@
 
 <script lang="ts" setup>
 import { api } from "~~/convex/_generated/api";
-import type { Id } from "~~/convex/_generated/dataModel";
+import type { Doc, Id } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
 const getDefaults = () => ({
@@ -62,7 +62,7 @@ const isOpen = defineModel<boolean>("open", { required: true });
 // ------ External Composables ------
 const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
 const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
-const { isLoading: isRefreshingUsername, refreshPlayerName } = usePlayerNameRefresh();
+const { syncPlayer, isLoading: isSyncing } = usePlayerSync();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaults);
@@ -117,13 +117,23 @@ const closeModal = () => {
 
 // ------ Handlers ------
 const handleRefreshClick = async () => {
-  // refreshPlayerName handles its own loading state and toasts
-  await refreshPlayerName({
-    osuId: props.osuId,
-    currentUsername: props.playerName,
-    currentCoverUrl: props.coverUrl,
-    playerId: props._playerId,
-  });
+  const success = await syncPlayer({
+    _id: props._playerId,
+    name: props.playerName,
+    osu_id: props.osuId,
+    cover_url: props.coverUrl,
+  } as Doc<"players">);
+
+  if (success) {
+    toast.success({
+      title: `Player "${props.playerName}" refreshed successfully!`,
+    });
+  } else {
+    toast.error({
+      title: `Failed to refresh player "${props.playerName}".`,
+      description: "Please try again later.",
+    });
+  }
 };
 
 const handleSaveChanges = () =>

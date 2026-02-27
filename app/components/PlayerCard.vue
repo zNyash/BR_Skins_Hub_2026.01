@@ -27,7 +27,7 @@
             color="neutral"
             variant="ghost"
             @click="handleRefreshClick"
-            :loading="isLoading"
+            :loading="isSyncing"
           />
         </UTooltip>
 
@@ -64,7 +64,7 @@
 import { TOOLTIP } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
-import type { Id } from "~~/convex/_generated/dataModel";
+import type { Doc, Id } from "~~/convex/_generated/dataModel";
 
 // ------ Props & Emits ------
 const props = defineProps<{
@@ -78,7 +78,7 @@ const props = defineProps<{
 const toast = useAppToast();
 const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
 const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
-const { isLoading, refreshPlayerName } = usePlayerNameRefresh();
+const { syncPlayer, isLoading: isSyncing } = usePlayerSync();
 
 // ------ Local State ------
 const isDeleting = ref(false);
@@ -127,12 +127,23 @@ const handleDeleteClick = () => {
 };
 
 const handleRefreshClick = async () => {
-  await refreshPlayerName({
-    osuId: props.osuId,
-    currentUsername: props.playerName,
-    currentCoverUrl: props.coverUrl,
-    playerId: props._playerId,
-  });
+  const { successMessage, errorMessage } = await syncPlayer({
+    _id: props._playerId,
+    name: props.playerName,
+    osu_id: props.osuId,
+    cover_url: props.coverUrl,
+  } as Doc<"players">);
+
+  if (successMessage) {
+    toast.success({
+      title: successMessage,
+    });
+  } else {
+    toast.error({
+      title: `Failed to refresh player "${props.playerName}".`,
+      description: errorMessage,
+    });
+  }
 };
 </script>
 
