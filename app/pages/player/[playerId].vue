@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full flex-col items-center gap-12">
-    <section v-if="player" class="flex w-full flex-col items-center gap-1">
+    <section v-if="player" class="flex w-full flex-col items-center gap-1 px-2 md:px-4 lg:px-0">
       <div class="relative w-full max-w-4xl">
         <div class="bg-background/0 from-default absolute inset-0 z-10 bg-linear-to-t to-50%" />
         <img :src="player.cover_url" alt="" class="w-full rounded-xl object-cover" />
@@ -19,7 +19,7 @@
       </span>
     </section>
 
-    <section v-if="skins" class="flex w-full max-w-3xl flex-col gap-2">
+    <section v-if="skins" class="flex w-full max-w-4xl flex-col gap-2 px-2 md:px-4 lg:px-0">
       <UInput
         placeholder="Search skins..."
         class="search-input-default-size"
