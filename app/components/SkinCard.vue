@@ -31,13 +31,16 @@
 
         <!-- Extra Info -->
         <div class="flex">
+          <!-- Download Count -->
           <UPopover mode="hover" :content="{ align: 'start' }">
-            <span
+            <a
+              :href="skin.download_url"
+              target="_blank"
               class="isHovering flex w-fit cursor-help items-center justify-center gap-1 select-none"
             >
               <UIcon :name="ICONS.DOWNLOAD" />
               <p class="text-muted text-xs">{{ skin.download_count }}</p>
-            </span>
+            </a>
 
             <template #content>
               <span class="popover-content">
@@ -46,6 +49,7 @@
             </template>
           </UPopover>
 
+          <!-- Creation Time -->
           <UPopover mode="hover" :content="{ align: 'end' }">
             <span class="isHovering text-muted ml-auto cursor-help text-xs select-none">
               {{ formatTimeAgo(new Date(skin._creationTime)) }}

@@ -17,9 +17,24 @@
   }
 }
 
+.search-input-default-size {
+  @apply w-full max-w-65;
+}
+
 @supports (corner-shape: squircle) {
   .squircle {
     corner-shape: squircle;
     border-radius: 50% !important;
   }
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }

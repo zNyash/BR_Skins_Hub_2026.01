@@ -5,30 +5,26 @@
         v-model="inputSearch"
         :icon="ICONS.SEARCH"
         placeholder="Search players by name or ID..."
-        class="w-full max-w-60"
+        class="search-input-default-size"
       />
 
-      <div v-if="filteredPlayers.length" class="grid w-full grid-cols-2 gap-2">
+      <div v-if="isLoadingPlayers" class="grid w-full grid-cols-2 gap-2">
+        <USkeleton v-for="n in 8" :key="n" class="h-15 w-full" />
+      </div>
+
+      <div v-else-if="filteredPlayers.length" class="grid w-full grid-cols-2 gap-2">
         <MainPlayerCard v-for="player in filteredPlayers" :key="player._id" :player="player" />
       </div>
 
-      <div
-        v-else-if="!filteredPlayers.length && !isLoadingPlayers"
-        class="text-muted-foreground flex flex-col items-center justify-center py-10"
-      >
-        <UIcon :name="ICONS.FROWN" class="text-muted-foreground/50 mb-2 h-10 w-10" />
-        <p>No players found matching "{{ inputSearch }}"</p>
-      </div>
-
-      <div v-if="isLoadingPlayers" class="grid w-full max-w-2xl grid-cols-2 gap-2">
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
+      <div v-else class="flex flex-col items-center justify-center py-10">
+        <div class="text-muted-foreground flex flex-col items-center gap-2">
+          <UEmpty
+            :title="`No players found matching \u0022${inputSearch}\u0022`"
+            description="Are you sure you typed that correctly? You can search by player name or osu! ID."
+            :icon="ICONS.FROWN"
+            variant="naked"
+          />
+        </div>
       </div>
     </div>
   </div>
