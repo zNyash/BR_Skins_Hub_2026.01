@@ -1,9 +1,9 @@
 <template>
   <div class="flex w-full flex-col items-center gap-12">
     <section v-if="player" class="flex w-full flex-col items-center gap-1 px-2 md:px-4 lg:px-0">
-      <div class="relative w-full max-w-4xl">
-        <div class="bg-background/0 from-default absolute inset-0 z-10 bg-linear-to-t to-50%" />
-        <img :src="player.cover_url" alt="" class="w-full rounded-xl object-cover" />
+      <div class="relative h-62 w-full max-w-4xl">
+        <div class="bg-background/0 from-default absolute inset-0 z-10 bg-linear-to-t to-75%" />
+        <img :src="player.cover_url" alt="" class="size-full rounded-xl object-cover" />
       </div>
       <span class="z-10 -mt-24 flex flex-col items-center">
         <a class="size-26" :href="`https://osu.ppy.sh/users/${player.osu_id}`" target="_blank">
