@@ -1,6 +1,7 @@
 <template>
   <UContextMenu :items="menuItems" :disabled="isContextDisabledComputed">
-    <div class="bg-muted relative w-full overflow-hidden rounded-lg">
+    <!-- Loaded State -->
+    <div v-if="skin && !loading" class="bg-muted relative w-full overflow-hidden rounded-lg">
       <ImageSlider :images="skin.preview_images" />
       <!-- Download Button -->
       <UButton
@@ -27,6 +28,7 @@
             </span>
           </template>
         </UPopover>
+
         <USeparator color="neutral" class="mt-1 mb-2 brightness-150" />
 
         <!-- Extra Info -->
@@ -63,7 +65,33 @@
         </div>
       </div>
     </div>
-    <ModalsEditSkin :skin="skin" v-model:open="isModalOpen" />
+
+    <!-- Skeleton State -->
+    <div v-else class="bg-muted relative w-full animate-pulse overflow-hidden rounded-lg">
+      <div class="relative mb-1 flex aspect-video w-full max-w-3xl"></div>
+
+      <!-- Information Section -->
+      <div class="text-toned flex flex-col px-2 pb-2">
+        <!-- Skin Title -->
+        <span class="flex size-fit max-w-full cursor-help">
+          <p class="truncate text-lg font-medium">&nbsp;</p>
+        </span>
+
+        <USeparator color="neutral" class="mt-1 mb-2 brightness-150" />
+
+        <!-- Extra Info -->
+        <div class="flex">
+          <!-- Download Count -->
+          <a target="_blank" class="flex w-fit items-center justify-center gap-1 select-none">
+            <p class="text-muted text-xs">&nbsp;</p>
+          </a>
+
+          <!-- Creation Time -->
+          <span class="text-muted ml-auto text-xs select-none">&nbsp;</span>
+        </div>
+      </div>
+    </div>
+    <ModalsEditSkin v-if="skin" :skin="skin" v-model:open="isModalOpen" />
   </UContextMenu>
 </template>
 
@@ -80,8 +108,9 @@ type Skin = Doc<"skins">;
 
 // ------ Props & Emits ------
 const props = defineProps<{
-  skin: Skin;
+  skin?: Skin;
   disabled?: boolean;
+  loading?: boolean;
 }>();
 
 // ------ External Composables ------
@@ -96,19 +125,25 @@ const isModalOpen = ref(false);
 
 // ------ Computed ------
 const isContextDisabledComputed = computed(() => {
-  // 1. If the prop was explicitly passed (it's not undefined), prioritize it.
+  // 1. If loading or no skin, disable context menu
+  if (props.loading || !props.skin) return true;
+
+  // 2. If the prop was explicitly passed (it's not undefined), prioritize it.
   // We check undefined because 'false' is a valid value we want to respect.
   if (props.disabled !== undefined) {
     return props.disabled;
   }
 
-  // 2. Otherwise (prop not passed), use default logic:
+  // 3. Otherwise (prop not passed), use default logic:
   // Disabled by default (true), unless signed in (false).
   return !isSignedIn.value;
 });
 
 const menuItems = computed(() => {
   const items: ContextMenuItem[] = [];
+
+  // Cannot perform actions if loading or no skin
+  if (props.loading || !props.skin) return items;
 
   // Just for security. The buttons won't show if the user isn't signed in anyway
   // But this ensures that even if somehow they can see the buttons, they won't work unless they're signed in.
@@ -133,11 +168,14 @@ const menuItems = computed(() => {
 
 // ------ Actions ------
 function openEditModal() {
+  if (props.loading || !props.skin) return;
   isModalOpen.value = true;
 }
 
 // ------ Handlers ------
 async function handleSkinDeletion() {
+  if (!props.skin) return;
+
   try {
     isLoading.value = true;
 
@@ -167,6 +205,8 @@ async function handleSkinDeletion() {
 }
 
 async function handleDownload() {
+  if (!props.skin) return;
+
   try {
     isLoading.value = true;
 

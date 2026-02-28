@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full max-w-2xl flex-col gap-4">
+  <div class="flex w-full max-w-5xl flex-col gap-2 p-2">
     <div class="flex w-full items-center justify-between gap-2">
       <UInput
         v-model="inputSearch"
@@ -18,8 +18,17 @@
       </div>
     </div>
 
-    <div class="grid w-full grid-cols-2 gap-1.5">
-      <LoadingPage :isLoading="playersLoading" />
+    <div
+      v-if="isLoadingPlayers"
+      class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <USkeleton v-for="n in 32" :key="n" class="h-13.5 w-full" />
+    </div>
+
+    <div
+      v-else-if="filteredPlayers.length"
+      class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+    >
       <TransitionGroup name="listPlayers">
         <PlayerCard
           v-if="filteredPlayers"
@@ -39,7 +48,7 @@ import { useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 
 // ------ External Composables ------
-const { data: playersList, isPending: playersLoading } = useConvexQuery(api.players.listPlayers);
+const { data: playersList, isPending: isLoadingPlayers } = useConvexQuery(api.players.listPlayers);
 
 // ------ Local State ------
 const isCreatePlayerOpen = ref(false);

@@ -1,5 +1,5 @@
 <template>
-  <div class="relative mb-1 w-full max-w-2xl">
+  <div class="relative mb-1 w-full max-w-3xl">
     <!-- ViewPort -->
     <div class="relative flex aspect-video h-full overflow-hidden">
       <!-- Track -->
