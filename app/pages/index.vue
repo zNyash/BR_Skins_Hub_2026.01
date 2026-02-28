@@ -1,21 +1,37 @@
 <template>
   <div class="flex w-full flex-col items-center">
-    <div class="flex w-full max-w-2xl flex-col gap-4">
-      <UInput
-        v-model="inputSearch"
-        :icon="ICONS.SEARCH"
-        placeholder="Search players by name or ID..."
-        class="search-input-default-size"
-      />
-
-      <div v-if="isLoadingPlayers" class="grid w-full grid-cols-2 gap-2">
-        <USkeleton v-for="n in 8" :key="n" class="h-15 w-full" />
+    <div class="flex w-full max-w-5xl flex-col gap-2 p-2">
+      <!-- Search Input -->
+      <div class="flex w-full items-end justify-between">
+        <UInput
+          v-model="inputSearch"
+          :icon="ICONS.SEARCH"
+          placeholder="Search players by name or ID..."
+          class="search-input-default-size"
+        />
+        <p v-if="playersList?.length" class="text-muted text-sm">
+          Loaded {{ playersList.length }} players
+        </p>
+        <p v-else class="text-muted text-sm">Loading players...</p>
       </div>
 
-      <div v-else-if="filteredPlayers.length" class="grid w-full grid-cols-2 gap-2">
+      <!-- Loading Skeletons -->
+      <div
+        v-if="isLoadingPlayers"
+        class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+      >
+        <USkeleton v-for="n in 32" :key="n" class="h-15 w-full" />
+      </div>
+
+      <!-- Players List -->
+      <div
+        v-else-if="filteredPlayers.length"
+        class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+      >
         <MainPlayerCard v-for="player in filteredPlayers" :key="player._id" :player="player" />
       </div>
 
+      <!-- No Players Found -->
       <div v-else class="flex flex-col items-center justify-center py-10">
         <div class="text-muted-foreground flex flex-col items-center gap-2">
           <UEmpty

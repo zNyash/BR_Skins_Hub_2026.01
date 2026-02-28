@@ -1,20 +1,30 @@
 <template>
   <div class="flex w-full flex-col items-center">
-    <section class="flex w-full max-w-2xl flex-col items-center gap-4">
-      <div class="flex w-full">
+    <section class="flex w-full max-w-5xl flex-col gap-2 p-2">
+      <div class="flex w-full items-end justify-between">
         <UInput
           v-model="inputSearch"
           placeholder="Search skins..."
           :icon="ICONS.SEARCH"
           class="search-input-default-size"
         />
+        <p v-if="skinsList?.length" class="text-muted text-sm">
+          Loaded {{ skinsList.length }} skins
+        </p>
+        <p v-else class="text-muted text-sm">Loading skins...</p>
       </div>
 
-      <div v-if="isLoadingSkins" class="grid w-full grid-cols-2 gap-2">
-        <USkeleton v-for="n in 8" :key="n" class="h-[259.75px] w-full" />
+      <div
+        v-if="isLoadingSkins"
+        class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+      >
+        <SkinCard v-for="n in 16" :key="n" loading />
       </div>
 
-      <div v-else-if="filteredSkins.length" class="grid w-full grid-cols-2 gap-2">
+      <div
+        v-else-if="filteredSkins.length"
+        class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+      >
         <SkinCard
           v-for="skin in filteredSkins"
           :key="skin._id"

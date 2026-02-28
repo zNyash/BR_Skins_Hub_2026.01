@@ -1,5 +1,5 @@
 <template>
-  <div class="flex w-full max-w-2xl flex-col items-center gap-4">
+  <div class="flex w-full max-w-5xl flex-col gap-2 p-2">
     <div class="flex w-full justify-between">
       <UInput
         v-model="inputSearch"
@@ -14,10 +14,13 @@
     </div>
 
     <!-- Skins Display -->
-    <div class="grid w-full grid-cols-2 gap-2" v-if="isLoadingSkins">
-      <USkeleton v-for="n in 8" :key="n" class="h-[259.75px] w-full" />
+    <div class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3" v-if="isLoadingSkins">
+      <SkinCard v-for="n in 16" :key="n" loading />
     </div>
-    <div class="grid w-full grid-cols-2 gap-2" v-else-if="filteredSkins.length">
+    <div
+      class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+      v-else-if="filteredSkins.length"
+    >
       <SkinCard v-for="skin in filteredSkins" :key="skin._id" :skin="skin" />
     </div>
   </div>
