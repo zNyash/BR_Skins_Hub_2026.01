@@ -19,7 +19,14 @@
     </div>
 
     <div
-      v-if="filteredPlayers.length"
+      v-if="isLoadingPlayers"
+      class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <USkeleton v-for="n in 32" :key="n" class="h-13.5 w-full" />
+    </div>
+
+    <div
+      v-else-if="filteredPlayers.length"
       class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
     >
       <TransitionGroup name="listPlayers">
@@ -31,9 +38,6 @@
         />
       </TransitionGroup>
     </div>
-    <div v-else class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-      <USkeleton v-for="n in 32" :key="n" class="h-13.5 w-full" />
-    </div>
   </div>
 </template>
 
@@ -44,7 +48,7 @@ import { useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 
 // ------ External Composables ------
-const { data: playersList, isPending: playersLoading } = useConvexQuery(api.players.listPlayers);
+const { data: playersList, isPending: isLoadingPlayers } = useConvexQuery(api.players.listPlayers);
 
 // ------ Local State ------
 const isCreatePlayerOpen = ref(false);

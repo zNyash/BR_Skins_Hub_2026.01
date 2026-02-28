@@ -21,16 +21,19 @@
         <SkinCard v-for="n in 16" :key="n" loading />
       </div>
 
-      <div
-        v-else-if="filteredSkins.length"
-        class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
-      >
-        <SkinCard
-          v-for="skin in filteredSkins"
-          :key="skin._id"
-          :skin="skin"
-          :disabled="!isSignedIn"
-        />
+      <div v-else-if="filteredSkins.length" class="flex w-full flex-col gap-4">
+        <div class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+          <SkinCard
+            v-for="skin in visibleSkins"
+            :key="skin._id"
+            :skin="skin"
+            :disabled="!isSignedIn"
+          />
+        </div>
+
+        <div v-if="canLoadMore" ref="loadMoreTrigger" class="flex justify-center py-4">
+          <p class="text-muted animate-pulse text-sm">Loading more...</p>
+        </div>
       </div>
     </section>
   </div>
@@ -39,23 +42,21 @@
 <script lang="ts" setup>
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
-import { useSorted } from "@vueuse/core";
+import { useIntersectionObserver, useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 
-const { isSignedIn } = useAuth();
-
 // ------ External Composables ------
+const { isSignedIn } = useAuth();
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
 
 // ------ Local State ------
 const inputSearch = ref("");
 
-// ------ Computed ------
+// ------ Sorting and Filtering Skins ------
 const sortedSkins = useSorted(
   () => skinsList.value || [],
   (a, b) => a.name.localeCompare(b.name),
 );
-
 const filteredSkins = computed(() => {
   if (!inputSearch.value) return sortedSkins.value;
 
@@ -64,7 +65,26 @@ const filteredSkins = computed(() => {
     threshold: 0.3,
   });
 
-  return fuse.search(inputSearch.value).map((result) => result.item);
+  const results = fuse.search(inputSearch.value).map((result) => result.item);
+  return results;
+});
+
+// ------ Paginating and loading more skins ------
+const {
+  visibleItems: visibleSkins,
+  canLoadMore,
+  loadMore,
+} = useLoadMore(filteredSkins, {
+  pageSize: 16,
+  resetTrigger: inputSearch,
+});
+
+// Automatically load more skins when the user scrolls to the bottom of the list.
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+useIntersectionObserver(loadMoreTrigger, ([entry]) => {
+  if (entry?.isIntersecting && canLoadMore.value) {
+    loadMore();
+  }
 });
 </script>
 

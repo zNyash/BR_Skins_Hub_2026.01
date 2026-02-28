@@ -28,7 +28,10 @@
         v-else-if="filteredPlayers.length"
         class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
       >
-        <MainPlayerCard v-for="player in filteredPlayers" :key="player._id" :player="player" />
+        <MainPlayerCard v-for="player in visiblePlayers" :key="player._id" :player="player" />
+        <div v-if="canLoadMore" ref="loadMoreTrigger" class="flex justify-center py-4">
+          <p class="text-muted animate-pulse text-sm">Loading more...</p>
+        </div>
       </div>
 
       <!-- No Players Found -->
@@ -47,6 +50,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useIntersectionObserver } from "@vueuse/core";
 import Fuse from "fuse.js";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
@@ -57,7 +61,7 @@ const { data: playersList, isPending: isLoadingPlayers } = useConvexQuery(api.pl
 // ------ Local State ------
 const inputSearch = ref("");
 
-// ------ Computed ------
+// ------ Sorting and Filtering Players ------
 const sortedPlayers = computed(() => {
   if (!playersList.value) return [];
   return [...playersList.value].sort((a, b) => a.name.localeCompare(b.name));
@@ -77,6 +81,24 @@ const filteredPlayers = computed(() => {
   });
 
   return fuse.search(inputSearch.value).map((result) => result.item);
+});
+
+// ------ Paginating and loading more players ------
+const {
+  visibleItems: visiblePlayers,
+  canLoadMore,
+  loadMore,
+} = useLoadMore(filteredPlayers, {
+  pageSize: 32,
+  resetTrigger: inputSearch,
+});
+
+// Automatically load more players when the user scrolls to the bottom of the list.
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+useIntersectionObserver(loadMoreTrigger, ([entry]) => {
+  if (entry?.isIntersecting && canLoadMore.value) {
+    loadMore();
+  }
 });
 
 // ------ Lifecycle ------

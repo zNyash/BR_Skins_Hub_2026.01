@@ -21,7 +21,11 @@
       class="grid w-full grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"
       v-else-if="filteredSkins.length"
     >
-      <SkinCard v-for="skin in filteredSkins" :key="skin._id" :skin="skin" />
+      <SkinCard v-for="skin in visibleSkins" :key="skin._id" :skin="skin" />
+
+      <div v-if="canLoadMore" ref="loadMoreTrigger" class="flex justify-center py-4">
+        <p class="text-muted animate-pulse text-sm">Loading more...</p>
+      </div>
     </div>
   </div>
 </template>
@@ -29,7 +33,7 @@
 <script lang="ts" setup>
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
-import { useSorted } from "@vueuse/core";
+import { useIntersectionObserver, useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 
 // ------ External Composables ------
@@ -39,14 +43,11 @@ const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.
 const isCreateSkinOpen = ref(false);
 const inputSearch = ref("");
 
-// ------ Computed ------
-// Make here the sorted skins list by time created (createdAt)
+// ------ Sorting and Filtering Skins ------
 const sortedSkins = useSorted(
   () => skinsList.value || [],
   (a, b) => b._creationTime - a._creationTime,
 );
-
-// Make here the filtered skins list by search input (inputSearch)
 const filteredSkins = computed(() => {
   if (!inputSearch.value) return sortedSkins.value;
 
@@ -56,6 +57,22 @@ const filteredSkins = computed(() => {
   });
 
   return fuse.search(inputSearch.value).map((result) => result.item);
+});
+
+// ------ Paginating and loading more skins ------
+const {
+  visibleItems: visibleSkins,
+  canLoadMore,
+  loadMore,
+} = useLoadMore(filteredSkins, {
+  pageSize: 12,
+});
+
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+useIntersectionObserver(loadMoreTrigger, ([entry]) => {
+  if (entry?.isIntersecting && canLoadMore.value) {
+    loadMore();
+  }
 });
 
 // ------ Lifecycle ------
