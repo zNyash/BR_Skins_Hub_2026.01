@@ -57,20 +57,18 @@
 
     <!-- Already Signed In View -->
     <SignedIn>
-      <div class="flex flex-col items-center gap-4 text-center">
-        <div class="bg-primary/10 rounded-full p-4">
-          <UIcon :name="ICONS.SUCCESS" class="text-primary size-12" />
-        </div>
-        <div class="space-y-1">
-          <h2 class="text-xl font-bold">You are signed in</h2>
-          <p class="text-muted text-sm">Access the dashboard below</p>
-        </div>
-
-        <div class="flex gap-3">
-          <UserButton />
-          <UButton to="/dashboard/players" :icon="ICONS.EDIT" label="Go to Dashboard" />
-        </div>
-      </div>
+      <UEmpty
+        title="You are already signed in!"
+        description="You can go to the dashboard or wait until you're automatically redirected."
+        :actions="[
+          {
+            label: 'Go to Dashboard',
+            href: '/dashboard/players',
+            color: 'primary',
+            variant: 'solid',
+          },
+        ]"
+      />
     </SignedIn>
   </div>
 </template>
@@ -78,6 +76,7 @@
 <script lang="ts" setup>
 import { ICONS } from "~/types/icons";
 
+const { isSignedIn } = useAuth();
 const { signIn, isLoaded, setActive } = useSignIn();
 
 const username = ref("");
@@ -121,6 +120,16 @@ useSeoMeta({
   title: "Admin Login | BR Skins Hub Dashboard",
   ogTitle: "Admin Login | BR Skins Hub Dashboard",
 });
+
+watch(
+  isSignedIn,
+  (signedIn) => {
+    if (signedIn) {
+      navigateTo("/dashboard/players");
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style></style>
