@@ -1,24 +1,20 @@
-import { OsuUser } from "~~/server/types/me";
-
-interface OsuTokenResponse {
-  token_type: "Bearer"; // always Bearer
-  expires_in: number; // seconds until expiration
-  access_token: string;
-  refresh_token: string;
-}
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "~~/convex/_generated/api";
+import type { OsuTokenResponse } from "~~/server/types/osu-token";
+import type { OsuUser } from "~~/server/types/me";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
-  const code = query.code as string;
+  const code = query.code;
 
-  if (!code) {
-    throw createError({
-      statusCode: 400,
-      message: "Authorization code is missing",
-    });
+  if (typeof code !== "string") {
+    throw createError({ statusCode: 400, message: "Authorization code is missing" });
   }
 
   const runtimeConfig = useRuntimeConfig();
+  const convex = new ConvexHttpClient(process.env.CONVEX_URL!);
+
+  // Exchange the authorization code for an access token
   const tokenResponse = await $fetch<OsuTokenResponse>("https://osu.ppy.sh/oauth/token", {
     method: "POST",
     headers: {
@@ -34,14 +30,28 @@ export default defineEventHandler(async (event) => {
     },
   });
 
+  // Use the access token to fetch the user's profile information
   const me = await $fetch<OsuUser>("https://osu.ppy.sh/api/v2/me", {
     headers: {
       Authorization: `Bearer ${tokenResponse.access_token}`,
     },
   });
 
-  return {
+  // Upsert the user in the database
+  await convex.mutation(api.auth.upsertUser, {
     osu_id: me.id,
     username: me.username,
-  };
+  });
+
+  // Create a session token for the user and set it as a cookie
+  const token = await createToken(me.id);
+
+  setCookie(event, "session", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
+  return sendRedirect(event, "/");
 });

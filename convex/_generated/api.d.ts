@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as playerSkins from "../playerSkins.js";
 import type * as players from "../players.js";
 import type * as skins from "../skins.js";
@@ -19,6 +20,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   playerSkins: typeof playerSkins;
   players: typeof players;
   skins: typeof skins;

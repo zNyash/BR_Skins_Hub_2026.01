@@ -1,0 +1,25 @@
+import { mutation } from "./_generated/server";
+import { v } from "convex/values";
+
+export const upsertUser = mutation({
+  args: {
+    osu_id: v.number(),
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existingUser = await ctx.db
+      .query("authUsers")
+      .withIndex("by_osu_id", (q) => q.eq("osu_id", args.osu_id))
+      .unique();
+
+    if (existingUser) {
+      await ctx.db.patch(existingUser._id, { username: args.username });
+      return existingUser._id;
+    }
+
+    return await ctx.db.insert("authUsers", {
+      osu_id: args.osu_id,
+      username: args.username,
+    });
+  },
+});
