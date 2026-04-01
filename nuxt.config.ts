@@ -30,6 +30,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     osuClientSecret: process.env.OSU_CLIENT_SECRET,
-    public: { osuClientId: process.env.OSU_CLIENT_ID },
+    public: {
+      osuClientId: process.env.OSU_CLIENT_ID,
+      currentDomain: process.env.CURRENT_DOMAIN,
+    },
   },
 });

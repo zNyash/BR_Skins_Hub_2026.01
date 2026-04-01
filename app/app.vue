@@ -3,7 +3,9 @@
     <nav
       class="border-muted bg-mantle/25 fixed top-0 z-50 flex w-full items-center justify-center border-b backdrop-blur-3xl"
     >
+      <UButton label="Login" class="invisible" />
       <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
+      <UButton @click="login" label="Login" />
     </nav>
 
     <UMain class="mt-24 mb-24 flex h-full w-full justify-center">
@@ -76,6 +78,7 @@ import { useClipboard } from "@vueuse/core";
 // ------ External Composables ------
 const { isSignedIn } = useAuth();
 const { copy, copied } = useClipboard();
+const runtimeConfig = useRuntimeConfig();
 
 // ------ Local State ------
 const footerItems: NavigationMenuItem[] = [];
@@ -119,4 +122,15 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
 
   return items;
 });
+
+const login = () => {
+  const params = new URLSearchParams({
+    client_id: runtimeConfig.public.osuClientId,
+    redirect_uri: `${runtimeConfig.public.currentDomain}/api/auth/callback`,
+    response_type: "code",
+    scope: "identify",
+  });
+
+  window.location.href = `https://osu.ppy.sh/oauth/authorize?${params}`;
+};
 </script>
