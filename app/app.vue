@@ -3,10 +3,9 @@
     <nav
       class="border-muted bg-mantle/25 fixed top-0 z-50 flex w-full items-center justify-center border-b backdrop-blur-3xl"
     >
-      <UButton label="Login" class="invisible" />
+      <UserNavCard class="invisible" />
       <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
-      <UButton v-if="!isSignedIn" @click="login" label="Login" />
-      <UButton v-else @click="logout" label="Logout" color="neutral" variant="ghost" />
+      <UserNavCard />
     </nav>
 
     <UMain class="mt-24 mb-24 flex h-full w-full justify-center">
@@ -71,9 +70,8 @@ import { ICONS } from "./types/icons";
 import { useClipboard } from "@vueuse/core";
 
 // ------ External Composables ------
-const { isAdmin, isSignedIn, user } = useAuth();
+const { isAdmin, user } = useAuth();
 const { copy, copied } = useClipboard();
-const runtimeConfig = useRuntimeConfig();
 
 // ------ Lifecycle ------
 await callOnce(async () => {
@@ -122,19 +120,4 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
 
   return items;
 });
-// ------ Actions ------
-const login = () => {
-  const params = new URLSearchParams({
-    client_id: runtimeConfig.public.osuClientId,
-    redirect_uri: `${runtimeConfig.public.currentDomain}/api/auth/callback`,
-    response_type: "code",
-    scope: "identify",
-  });
-
-  window.location.href = `https://osu.ppy.sh/oauth/authorize?${params}`;
-};
-
-const logout = () => {
-  window.location.href = "/api/auth/logout";
-};
 </script>

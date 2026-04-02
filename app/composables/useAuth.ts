@@ -1,6 +1,8 @@
 type AuthUser = {
   osu_id: number;
   isAdmin: boolean;
+  username: string | null;
+  avatar_url: string | null;
 };
 
 export const useAuth = () => {
