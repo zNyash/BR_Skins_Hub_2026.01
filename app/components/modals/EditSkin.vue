@@ -17,7 +17,6 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "~~/convex/_generated/api";
 import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
@@ -30,7 +29,6 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ External Composables ------
-const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 
@@ -76,10 +74,12 @@ const onSave = () =>
       }
 
       statusMessage.value = "Updating skin...";
-      await updateSkin({
-        _id: props.skin._id,
-        name: formdata.value.name,
-        download_url: formdata.value.downloadUrl,
+      await $fetch(`/api/skins/${props.skin._id}`, {
+        method: "PATCH",
+        body: {
+          name: formdata.value.name,
+          download_url: formdata.value.downloadUrl,
+        },
       });
 
       toast.success({

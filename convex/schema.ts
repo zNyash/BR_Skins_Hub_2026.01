@@ -33,4 +33,12 @@ export default defineSchema({
     .index("by_player", ["player_id"])
     .index("by_skin", ["skin_id"])
     .index("by_player_skin", ["player_id", "skin_id"]),
+
+  /* ---------- */
+  /* Auth Users */
+  /* ---------- */
+  authUsers: defineTable({
+    osu_id: v.number(),
+    username: v.string(),
+  }).index("by_osu_id", ["osu_id"]),
 });

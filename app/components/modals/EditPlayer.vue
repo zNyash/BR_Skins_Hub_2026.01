@@ -57,8 +57,6 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ External Composables ------
-const updatePlayerMutation = useConvexMutation(api.players.updatePlayer);
-const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
 const { syncPlayer, isLoading: isSyncing } = usePlayerSync();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
@@ -165,9 +163,9 @@ const handleSaveChanges = () =>
       if (hasNameChanged) {
         statusMessage.value = "Updating username...";
         promises.push(
-          updatePlayerMutation.mutate({
-            id: props.player._id,
-            name: formState.value.name,
+          $fetch(`/api/players/${props.player._id}`, {
+            method: "PATCH",
+            body: { name: formState.value.name },
           }),
         );
       }
@@ -175,9 +173,9 @@ const handleSaveChanges = () =>
       if (hasSkinsChanged) {
         statusMessage.value = "Updating skins...";
         promises.push(
-          updateSkinsMutation.mutate({
-            player_id: props.player._id,
-            skin_ids: Array.from(currentIds),
+          $fetch(`/api/player-skins/${props.player._id}`, {
+            method: "PUT",
+            body: { skin_ids: Array.from(currentIds) },
           }),
         );
       }

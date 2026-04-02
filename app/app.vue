@@ -3,7 +3,9 @@
     <nav
       class="border-muted bg-mantle/25 fixed top-0 z-50 flex w-full items-center justify-center border-b backdrop-blur-3xl"
     >
+      <UserNavCard class="invisible" />
       <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
+      <UserNavCard />
     </nav>
 
     <UMain class="mt-24 mb-24 flex h-full w-full justify-center">
@@ -58,12 +60,6 @@
           </span>
         </template>
       </UPopover>
-
-      <template #right>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </template>
     </UFooter>
   </UApp>
 </template>
@@ -74,11 +70,16 @@ import { ICONS } from "./types/icons";
 import { useClipboard } from "@vueuse/core";
 
 // ------ External Composables ------
-const { isSignedIn } = useAuth();
+const { isAdmin, user } = useAuth();
 const { copy, copied } = useClipboard();
 
-// ------ Local State ------
-const footerItems: NavigationMenuItem[] = [];
+// ------ Lifecycle ------
+await callOnce(async () => {
+  const { cookie } = useRequestHeaders(["cookie"]);
+  user.value = await $fetch("/api/auth/me", {
+    headers: cookie ? { cookie } : {},
+  });
+});
 
 // ------ Computed ------
 const menuItems = computed<NavigationMenuItem[]>(() => {
@@ -95,7 +96,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
     },
   ];
 
-  if (isSignedIn.value) {
+  if (isAdmin.value) {
     items.push({
       label: "Dashboard",
       icon: ICONS.DASHBOARD,

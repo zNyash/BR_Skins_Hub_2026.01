@@ -24,6 +24,13 @@ export const listSkins = query({
   },
 });
 
+export const getSkin = query({
+  args: { id: v.id("skins") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 export const updateSkin = mutation({
   args: {
     _id: v.id("skins"),

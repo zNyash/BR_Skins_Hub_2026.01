@@ -18,8 +18,6 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "~~/convex/_generated/api";
-
 // ------ Local Types & Defaults ------
 const getDefaultFormState = () => ({
   osu_id: undefined,
@@ -30,7 +28,6 @@ const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ External Composables ------
 const toast = useAppToast();
-const createPlayerMutation = useConvexMutation(api.players.createPlayer);
 const { fetchPlayerInfo } = usePlayerSync();
 const { handleSubmit, statusMessage } = useSubmitAction();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaultFormState);
@@ -80,10 +77,13 @@ const handleCreatePlayer = () =>
       }
 
       statusMessage.value = "Creating player...";
-      await createPlayerMutation.mutate({
-        name: data.username,
-        osu_id: formState.value.osu_id!,
-        cover_url: data.cover.url || "",
+      await $fetch("/api/players", {
+        method: "POST",
+        body: {
+          name: data.username,
+          osu_id: formState.value.osu_id!,
+          cover_url: data.cover.url || "",
+        },
       });
 
       toast.success({
