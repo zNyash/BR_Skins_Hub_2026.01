@@ -1,4 +1,4 @@
-import { getUser } from "~~/server/utils/getUser";
+import { JwtSessionPayload } from "~~/server/types/jwt";
 
 export default defineEventHandler(async (event) => {
   const user = await getUser(event);
@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     return {
       osu_id: -1,
-    };
+    } satisfies JwtSessionPayload;
   }
 
   return user;
