@@ -33,8 +33,6 @@
 </template>
 
 <script lang="ts" setup>
-import { api } from "~~/convex/_generated/api";
-
 // ------ Local Types & Defaults ------
 const getFormDefaults = () => ({
   name: "",
@@ -47,7 +45,6 @@ const getFormDefaults = () => ({
 const isOpen = defineModel<boolean>("open", { required: true });
 
 // ------ External Composables ------
-const { mutate: createSkin } = useConvexMutation(api.skins.createSkin);
 const { handleSubmit, statusMessage } = useSubmitAction();
 const toast = useAppToast();
 const { state: formState, reset: resetForm } = useResettableRef(getFormDefaults);
@@ -92,9 +89,12 @@ const handleSkinCreation = () =>
       }
 
       statusMessage.value = "Creating Skin...";
-      await createSkin({
-        ...formState.value,
-        preview_images: imageUrls,
+      await $fetch("/api/skins", {
+        method: "POST",
+        body: {
+          ...formState.value,
+          preview_images: imageUrls,
+        },
       });
 
       toast.success({

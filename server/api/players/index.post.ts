@@ -1,8 +1,7 @@
 import { api } from "~~/convex/_generated/api";
 
 export default defineEventHandler(async (event) => {
-  const user = await getUser(event);
-  if (!user) throw createError({ statusCode: 401, message: "Unauthorized" });
+  await requireAdmin(event);
 
   const body = await readBody(event);
 

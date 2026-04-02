@@ -5,7 +5,8 @@
     >
       <UButton label="Login" class="invisible" />
       <UNavigationMenu :items="menuItems" class="flex w-full max-w-2xl justify-center" />
-      <UButton @click="login" label="Login" />
+      <UButton v-if="!isSignedIn" @click="login" label="Login" />
+      <UButton v-else @click="logout" label="Logout" color="neutral" variant="ghost" />
     </nav>
 
     <UMain class="mt-24 mb-24 flex h-full w-full justify-center">
@@ -60,12 +61,6 @@
           </span>
         </template>
       </UPopover>
-
-      <template #right>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </template>
     </UFooter>
   </UApp>
 </template>
@@ -76,12 +71,17 @@ import { ICONS } from "./types/icons";
 import { useClipboard } from "@vueuse/core";
 
 // ------ External Composables ------
-const { isSignedIn } = useAuth();
+const { isAdmin, isSignedIn, user } = useAuth();
 const { copy, copied } = useClipboard();
 const runtimeConfig = useRuntimeConfig();
 
-// ------ Local State ------
-const footerItems: NavigationMenuItem[] = [];
+// ------ Lifecycle ------
+await callOnce(async () => {
+  const { cookie } = useRequestHeaders(["cookie"]);
+  user.value = await $fetch("/api/auth/me", {
+    headers: cookie ? { cookie } : {},
+  });
+});
 
 // ------ Computed ------
 const menuItems = computed<NavigationMenuItem[]>(() => {
@@ -98,7 +98,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
     },
   ];
 
-  if (isSignedIn.value) {
+  if (isAdmin.value) {
     items.push({
       label: "Dashboard",
       icon: ICONS.DASHBOARD,
@@ -122,7 +122,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
 
   return items;
 });
-
+// ------ Actions ------
 const login = () => {
   const params = new URLSearchParams({
     client_id: runtimeConfig.public.osuClientId,
@@ -132,5 +132,9 @@ const login = () => {
   });
 
   window.location.href = `https://osu.ppy.sh/oauth/authorize?${params}`;
+};
+
+const logout = () => {
+  window.location.href = "/api/auth/logout";
 };
 </script>

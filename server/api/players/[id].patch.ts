@@ -2,8 +2,7 @@ import { api } from "~~/convex/_generated/api";
 import type { Id } from "~~/convex/_generated/dataModel";
 
 export default defineEventHandler(async (event) => {
-  const user = await getUser(event);
-  if (!user) throw createError({ statusCode: 401, message: "Unauthorized" });
+  await requireAdmin(event);
 
   const id = getRouterParam(event, "id") as Id<"players">;
   const body = await readBody(event);

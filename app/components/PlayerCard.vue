@@ -57,8 +57,7 @@
 <script lang="ts" setup>
 import { TOOLTIP } from "~/types/constants";
 import { ICONS } from "~/types/icons";
-import { api } from "~~/convex/_generated/api";
-import type { Doc, Id } from "~~/convex/_generated/dataModel";
+import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Props & Emits ------
 const props = defineProps<{
@@ -67,8 +66,6 @@ const props = defineProps<{
 
 // ------ External Composables ------
 const toast = useAppToast();
-const deletePlayerMutation = useConvexMutation(api.players.deletePlayer);
-const updateSkinsMutation = useConvexMutation(api.playerSkins.updatePlayerSkins);
 const { syncPlayer, isLoading: isSyncing } = usePlayerSync();
 
 // ------ Local State ------
@@ -81,11 +78,11 @@ const confirmDelete = ref(false);
 const performPlayerDelete = async () => {
   try {
     isDeleting.value = true;
-    await deletePlayerMutation.mutate({ player_id: props.player._id });
+    await $fetch(`/api/players/${props.player._id}`, { method: "DELETE" });
 
-    updateSkinsMutation.mutate({
-      player_id: props.player._id,
-      skin_ids: [],
+    await $fetch(`/api/player-skins/${props.player._id}`, {
+      method: "PUT",
+      body: { skin_ids: [] },
     });
 
     hasBeenDeleted.value = true;

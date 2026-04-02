@@ -27,7 +27,7 @@
             v-for="skin in visibleSkins"
             :key="skin._id"
             :skin="skin"
-            :disabled="!isSignedIn"
+            :disabled="!isAdmin"
           />
         </div>
 
@@ -46,7 +46,7 @@ import { useIntersectionObserver, useSorted } from "@vueuse/core";
 import Fuse from "fuse.js";
 
 // ------ External Composables ------
-const { isSignedIn } = useAuth();
+const { isAdmin } = useAuth();
 const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(api.skins.listSkins);
 
 // ------ Local State ------

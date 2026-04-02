@@ -1,5 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import { dark } from "@clerk/themes";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -11,14 +10,9 @@ export default defineNuxtConfig({
   },
 
   css: ["./app/assets/main.css"],
-  modules: ["convex-nuxt", "@nuxt/ui", "@uploadthing/nuxt", "@clerk/nuxt"],
+  modules: ["convex-nuxt", "@nuxt/ui", "@uploadthing/nuxt"],
   convex: {
     url: process.env.CONVEX_URL,
-  },
-  clerk: {
-    appearance: {
-      theme: dark,
-    },
   },
 
   colorMode: {

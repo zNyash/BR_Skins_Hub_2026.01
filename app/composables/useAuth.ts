@@ -1,9 +1,17 @@
-export const useUseAuth = () => {
-  const user = useState("auth_user", () => null);
+type AuthUser = {
+  osu_id: number;
+  isAdmin: boolean;
+};
+
+export const useAuth = () => {
+  const user = useState<AuthUser | null>("auth_user", () => null);
+
+  const isSignedIn = computed(() => !!user.value && user.value.osu_id !== -1);
+  const isAdmin = computed(() => user.value?.isAdmin === true);
 
   const fetchUser = async () => {
-    user.value = await $fetch("/api/me");
+    user.value = await $fetch<AuthUser>("/api/auth/me");
   };
 
-  return { user, fetchUser };
+  return { user, isSignedIn, isAdmin, fetchUser };
 };

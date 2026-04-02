@@ -37,6 +37,7 @@
           <UPopover mode="hover" :content="{ align: 'start' }">
             <a
               :href="skin.download_url"
+              @click="handleDownload"
               target="_blank"
               class="isHovering flex w-fit cursor-help items-center justify-center gap-1 select-none"
             >
@@ -100,7 +101,6 @@ import type { ContextMenuItem } from "@nuxt/ui";
 import { formatTimeAgo } from "@vueuse/core";
 import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
-import { api } from "~~/convex/_generated/api";
 import type { Doc } from "~~/convex/_generated/dataModel";
 
 // ------ Local Types & Defaults ------
@@ -115,9 +115,7 @@ const props = defineProps<{
 
 // ------ External Composables ------
 const toast = useToast();
-const { isSignedIn } = useAuth();
-const { mutate: deleteSkin } = useConvexMutation(api.skins.deleteSkin);
-const { mutate: updateSkin } = useConvexMutation(api.skins.updateSkin);
+const { isAdmin } = useAuth();
 
 // ------ Local State ------
 const isLoading = ref(false);
@@ -135,8 +133,8 @@ const isContextDisabledComputed = computed(() => {
   }
 
   // 3. Otherwise (prop not passed), use default logic:
-  // Disabled by default (true), unless signed in (false).
-  return !isSignedIn.value;
+  // Disabled by default (true), unless admin (false).
+  return !isAdmin.value;
 });
 
 const menuItems = computed(() => {
@@ -145,9 +143,9 @@ const menuItems = computed(() => {
   // Cannot perform actions if loading or no skin
   if (props.loading || !props.skin) return items;
 
-  // Just for security. The buttons won't show if the user isn't signed in anyway
-  // But this ensures that even if somehow they can see the buttons, they won't work unless they're signed in.
-  if (isSignedIn.value) {
+  // Just for security. The buttons won't show if the user isn't an admin anyway.
+  // But this ensures that even if somehow they can see the buttons, they won't work unless they're admin.
+  if (isAdmin.value) {
     items.push(
       {
         label: "Edit Skin",
@@ -180,9 +178,7 @@ async function handleSkinDeletion() {
     isLoading.value = true;
 
     // Delete skin from database
-    await deleteSkin({
-      _id: props.skin._id,
-    });
+    await $fetch(`/api/skins/${props.skin._id}`, { method: "DELETE" });
 
     // Cleanup uploaded images from UploadThing for this skin
     await $fetch("/api/uploadthing/delete-files", {
@@ -210,10 +206,7 @@ async function handleDownload() {
   try {
     isLoading.value = true;
 
-    updateSkin({
-      _id: props.skin._id,
-      download_count: props.skin.download_count + 1,
-    });
+    await $fetch(`/api/skins/${props.skin._id}/download`, { method: "POST" });
   } catch (error) {
     console.error("Failed to update the download count.");
   } finally {
