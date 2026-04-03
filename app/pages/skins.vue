@@ -96,8 +96,8 @@ const { data: skinsList, isPending: isLoadingSkins } = useConvexQuery(
 
 // ------ Local State ------
 const inputSearch = ref("");
-const sortBy = ref<SortField>("name");
-const sortDir = ref<SortDir>("asc");
+const sortBy = ref<SortField>("_creationTime");
+const sortDir = ref<SortDir>("desc");
 
 // ------ Computed ------
 const paginationResetTrigger = computed(
