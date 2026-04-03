@@ -40,5 +40,6 @@ export default defineSchema({
   authUsers: defineTable({
     osu_id: v.number(),
     username: v.string(),
+    player_id: v.optional(v.id("players")),
   }).index("by_osu_id", ["osu_id"]),
 });
