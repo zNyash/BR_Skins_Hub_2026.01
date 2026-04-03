@@ -54,3 +54,23 @@ export const deleteSkin = mutation({
     await ctx.db.delete(args._id);
   },
 });
+
+export const listSkinsWithPlayers = query({
+  args: {},
+  handler: async (ctx) => {
+    const skins = await ctx.db.query("skins").collect();
+    return await Promise.all(
+      skins.map(async (skin) => {
+        const relations = await ctx.db
+          .query("playerSkins")
+          .withIndex("by_skin", (q) => q.eq("skin_id", skin._id))
+          .collect();
+
+        const players = await Promise.all(relations.map((r) => ctx.db.get(r.player_id)));
+        const playerNames = players.filter((p) => p !== null).map((p) => p!.name);
+
+        return { ...skin, playerNames };
+      }),
+    );
+  },
+});

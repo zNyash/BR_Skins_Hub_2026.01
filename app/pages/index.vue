@@ -2,17 +2,55 @@
   <div class="flex w-full flex-col items-center">
     <div class="flex w-full max-w-5xl flex-col gap-2 p-2">
       <!-- Search Input -->
-      <div class="flex w-full items-end justify-between">
-        <UInput
-          v-model="inputSearch"
-          :icon="ICONS.SEARCH"
-          placeholder="Search players by name or ID..."
-          class="search-input-default-size"
-        />
-        <p v-if="playersList?.length" class="text-muted text-sm">
-          Loaded {{ playersList.length }} players
-        </p>
-        <p v-else class="text-muted text-sm">Loading players...</p>
+      <div class="flex w-full items-center justify-between gap-2">
+        <span class="flex w-full items-center gap-1 text-nowrap">
+          <UInput
+            v-model="inputSearch"
+            :icon="ICONS.SEARCH"
+            placeholder="Search players by name or ID..."
+            class="search-input-default-size"
+          />
+
+          <!-- Players Count -->
+          <span>
+            <p v-if="playersList?.length" class="text-muted pl-2 text-sm">
+              {{ playersList.length }} players
+            </p>
+            <p v-else class="text-muted pl-2 text-sm">Loading...</p>
+          </span>
+        </span>
+
+        <div class="flex shrink-0 items-center gap-1">
+          <!-- Sorting Buttons -->
+          <UButton
+            size="sm"
+            color="neutral"
+            :variant="sortBy === 'name' ? 'soft' : 'ghost'"
+            :trailing-icon="
+              sortBy === 'name'
+                ? sortDir === 'asc'
+                  ? ICONS.SORT_NAME_ASC
+                  : ICONS.SORT_NAME_DESC
+                : ICONS.SORT_NAME_ASC
+            "
+            @click="toggleSort('name')"
+            >Name</UButton
+          >
+          <UButton
+            size="sm"
+            color="neutral"
+            :variant="sortBy === '_creationTime' ? 'soft' : 'ghost'"
+            :trailing-icon="
+              sortBy === '_creationTime'
+                ? sortDir === 'asc'
+                  ? ICONS.SORT_DATE_ASC
+                  : ICONS.SORT_DATE_DESC
+                : ICONS.SORT_DATE_ASC
+            "
+            @click="toggleSort('_creationTime')"
+            >Date</UButton
+          >
+        </div>
       </div>
 
       <!-- Loading Skeletons -->
@@ -55,16 +93,31 @@ import Fuse from "fuse.js";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
+// ------ Local Types & Defaults ------
+type SortField = "name" | "_creationTime";
+type SortDir = "asc" | "desc";
+
 // ------ External Composables ------
 const { data: playersList, isPending: isLoadingPlayers } = useConvexQuery(api.players.listPlayers);
 
 // ------ Local State ------
 const inputSearch = ref("");
+const sortBy = ref<SortField>("name");
+const sortDir = ref<SortDir>("asc");
 
-// ------ Sorting and Filtering Players ------
+// ------ Computed ------
+const paginationResetTrigger = computed(
+  () => `${sortBy.value}-${sortDir.value}-${inputSearch.value}`,
+);
+
 const sortedPlayers = computed(() => {
   if (!playersList.value) return [];
-  return [...playersList.value].sort((a, b) => a.name.localeCompare(b.name));
+  const list = [...playersList.value];
+  list.sort((a, b) => {
+    if (sortBy.value === "name") return a.name.localeCompare(b.name);
+    return a._creationTime - b._creationTime;
+  });
+  return sortDir.value === "desc" ? list.reverse() : list;
 });
 
 const filteredPlayers = computed(() => {
@@ -83,6 +136,16 @@ const filteredPlayers = computed(() => {
   return fuse.search(inputSearch.value).map((result) => result.item);
 });
 
+// ------ Actions ------
+const toggleSort = (field: SortField) => {
+  if (sortBy.value === field) {
+    sortDir.value = sortDir.value === "asc" ? "desc" : "asc";
+  } else {
+    sortBy.value = field;
+    sortDir.value = "asc";
+  }
+};
+
 // ------ Paginating and loading more players ------
 const {
   visibleItems: visiblePlayers,
@@ -90,7 +153,7 @@ const {
   loadMore,
 } = useLoadMore(filteredPlayers, {
   pageSize: 32,
-  resetTrigger: inputSearch,
+  resetTrigger: paginationResetTrigger,
 });
 
 // Automatically load more players when the user scrolls to the bottom of the list.
