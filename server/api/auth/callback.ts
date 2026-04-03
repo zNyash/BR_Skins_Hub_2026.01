@@ -1,9 +1,6 @@
-import { ConvexHttpClient } from "convex/browser";
 import { api } from "~~/convex/_generated/api";
 import type { OsuTokenResponse } from "~~/server/types/osu-token";
 import type { OsuUser } from "~~/server/types/me";
-
-const convex = new ConvexHttpClient(process.env.CONVEX_URL!);
 
 export default defineEventHandler(async (event) => {
   const { code } = getQuery(event);
