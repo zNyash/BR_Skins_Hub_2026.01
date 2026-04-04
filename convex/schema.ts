@@ -9,7 +9,25 @@ export default defineSchema({
     name: v.string(),
     osu_id: v.number(),
     cover_url: v.optional(v.string()),
+    hue: v.optional(v.number()),
     previous_usernames: v.optional(v.array(v.string())),
+    description: v.optional(v.string()),
+    links: v.optional(
+      v.array(
+        v.object({
+          type: v.union(
+            v.literal("twitch"),
+            v.literal("twitter"),
+            v.literal("youtube"),
+            v.literal("github"),
+            v.literal("discord"),
+            v.literal("custom"),
+          ),
+          value: v.string(),
+        }),
+      ),
+    ),
+    views: v.optional(v.number()),
   }).index("by_osu_id", ["osu_id"]),
 
   /* ----- */
