@@ -1,3 +1,4 @@
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -53,7 +54,7 @@ export const updatePlayer = mutation({
     previous_usernames: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const patch: any = {};
+    const patch: Partial<Doc<"players">> = {};
     if (args.name !== undefined) patch.name = args.name;
     if (args.cover_url !== undefined) patch.cover_url = args.cover_url;
     if (args.previous_usernames !== undefined) patch.previous_usernames = args.previous_usernames;
