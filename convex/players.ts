@@ -2,6 +2,16 @@ import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+function isAdminOsuId(osuId: number): boolean {
+  const raw = process.env.ADMIN_OSU_IDS ?? "";
+  const adminIds = raw
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => !Number.isNaN(id) && id > 0);
+
+  return adminIds.includes(osuId);
+}
+
 export const createPlayer = mutation({
   args: {
     name: v.string(),
@@ -69,6 +79,7 @@ export const updatePlayer = mutation({
 export const updatePlayerProfile = mutation({
   args: {
     id: v.id("players"),
+    requester_osu_id: v.number(),
     description: v.optional(v.string()),
     links: v.optional(
       v.array(
@@ -87,6 +98,18 @@ export const updatePlayerProfile = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const authUser = await ctx.db
+      .query("authUsers")
+      .withIndex("by_osu_id", (q) => q.eq("osu_id", args.requester_osu_id))
+      .unique();
+
+    const requesterOwnsProfile = authUser?.player_id === args.id;
+    const requesterIsAdmin = isAdminOsuId(args.requester_osu_id);
+
+    if (!requesterOwnsProfile && !requesterIsAdmin) {
+      throw new Error("Forbidden");
+    }
+
     const patch: Partial<Doc<"players">> = {};
 
     if (args.description !== undefined) patch.description = args.description;
