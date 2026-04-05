@@ -1,5 +1,16 @@
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+function isAdminOsuId(osuId: number): boolean {
+  const raw = process.env.ADMIN_OSU_IDS ?? "";
+  const adminIds = raw
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => !Number.isNaN(id) && id > 0);
+
+  return adminIds.includes(osuId);
+}
 
 export const createPlayer = mutation({
   args: {
@@ -45,6 +56,7 @@ export const getPlayerByOsuId = query({
   },
 });
 
+// For basic player information update
 export const updatePlayer = mutation({
   args: {
     id: v.id("players"),
@@ -53,12 +65,72 @@ export const updatePlayer = mutation({
     previous_usernames: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const patch: any = {};
+    const patch: Partial<Doc<"players">> = {};
+
     if (args.name !== undefined) patch.name = args.name;
     if (args.cover_url !== undefined) patch.cover_url = args.cover_url;
     if (args.previous_usernames !== undefined) patch.previous_usernames = args.previous_usernames;
 
     await ctx.db.patch(args.id, patch);
+  },
+});
+
+// For the player's page update
+export const updatePlayerProfile = mutation({
+  args: {
+    id: v.id("players"),
+    requester_osu_id: v.number(),
+    description: v.optional(v.string()),
+    links: v.optional(
+      v.array(
+        v.object({
+          type: v.union(
+            v.literal("twitch"),
+            v.literal("twitter"),
+            v.literal("youtube"),
+            v.literal("github"),
+            v.literal("discord"),
+            v.literal("custom"),
+          ),
+          value: v.string(),
+        }),
+      ),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await ctx.db
+      .query("authUsers")
+      .withIndex("by_osu_id", (q) => q.eq("osu_id", args.requester_osu_id))
+      .unique();
+
+    const requesterOwnsProfile = authUser?.player_id === args.id;
+    const requesterIsAdmin = isAdminOsuId(args.requester_osu_id);
+
+    if (!requesterOwnsProfile && !requesterIsAdmin) {
+      throw new Error("Forbidden");
+    }
+
+    const patch: Partial<Doc<"players">> = {};
+
+    if (args.description !== undefined) patch.description = args.description;
+    if (args.links !== undefined)
+      patch.links = args.links.filter((link) => link.value.trim() !== "");
+
+    await ctx.db.patch(args.id, patch);
+  },
+});
+
+export const incrementPlayerViews = mutation({
+  args: {
+    id: v.id("players"),
+  },
+  handler: async (ctx, args) => {
+    const player = await ctx.db.get(args.id);
+    if (!player) return;
+
+    await ctx.db.patch(args.id, {
+      views: (player.views ?? 0) + 1,
+    });
   },
 });
 
