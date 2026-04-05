@@ -8,6 +8,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   // If navigating to /login while already an admin
   if (to.path === "/login" && isAdmin.value) {
-    return navigateTo("/dashboard/players");
+    return navigateTo("/dashboard");
   }
 });
