@@ -100,6 +100,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
     items.push({
       label: "Dashboard",
       icon: ICONS.DASHBOARD,
+      to: "/dashboard",
       children: [
         {
           label: "Manage Players",
