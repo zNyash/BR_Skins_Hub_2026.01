@@ -89,7 +89,6 @@
 
 <script lang="ts" setup>
 import { useIntersectionObserver } from "@vueuse/core";
-import Fuse from "fuse.js";
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 
@@ -120,20 +119,8 @@ const sortedPlayers = computed(() => {
   return sortDir.value === "desc" ? list.reverse() : list;
 });
 
-const filteredPlayers = computed(() => {
-  if (!sortedPlayers.value?.length) return [];
-  if (!inputSearch.value) return sortedPlayers.value;
-
-  const fuse = new Fuse(sortedPlayers.value, {
-    keys: [
-      "name",
-      "osu_id",
-      "previous_usernames",
-    ] satisfies (keyof (typeof sortedPlayers.value)[number])[],
-    threshold: 0.3,
-  });
-
-  return fuse.search(inputSearch.value).map((result) => result.item);
+const filteredPlayers = useFuzzyFilter(sortedPlayers, inputSearch, {
+  keys: ["name", "osu_id", "previous_usernames"],
 });
 
 // ------ Actions ------

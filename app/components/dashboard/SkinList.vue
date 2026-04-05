@@ -16,7 +16,7 @@
         <button
           v-for="skin in filteredSkins"
           :key="skin._id"
-          class="hover:bg-elevated flex w-full items-center gap-2.5 rounded-lg p-1 text-left transition-colors"
+          class="hover:bg-elevated flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors"
           :class="{ 'bg-elevated ring-primary ring-1': store.selectedSkin?._id === skin._id }"
           @click="store.selectSkin(skin)"
         >
@@ -39,7 +39,6 @@
 </template>
 
 <script lang="ts" setup>
-import Fuse from "fuse.js";
 import { useSorted } from "@vueuse/core";
 import { api } from "~~/convex/_generated/api";
 import { ICONS } from "~/types/icons";
@@ -57,14 +56,7 @@ const sortedSkins = useSorted(
   (a, b) => b._creationTime - a._creationTime,
 );
 
-const filteredSkins = computed(() => {
-  if (!searchQuery.value.trim()) return sortedSkins.value;
-
-  const fuse = new Fuse(sortedSkins.value, {
-    keys: ["name", "author"],
-    threshold: 0.3,
-  });
-
-  return fuse.search(searchQuery.value).map((r) => r.item);
+const filteredSkins = useFuzzyFilter(sortedSkins, searchQuery, {
+  keys: ["name", "author"],
 });
 </script>

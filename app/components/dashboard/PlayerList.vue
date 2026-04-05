@@ -30,7 +30,6 @@
 </template>
 
 <script lang="ts" setup>
-import Fuse from "fuse.js";
 import { useSorted } from "@vueuse/core";
 import { api } from "~~/convex/_generated/api";
 import type { Doc } from "~~/convex/_generated/dataModel";
@@ -54,15 +53,8 @@ const sortedPlayers = useSorted(
   (a, b) => b._creationTime - a._creationTime,
 );
 
-const filteredPlayers = computed(() => {
-  if (!searchQuery.value.trim()) return sortedPlayers.value;
-
-  const fuse = new Fuse(sortedPlayers.value, {
-    keys: ["name", "osu_id"],
-    threshold: 0.3,
-  });
-
-  return fuse.search(searchQuery.value).map((r) => r.item);
+const filteredPlayers = useFuzzyFilter(sortedPlayers, searchQuery, {
+  keys: ["name", "osu_id"],
 });
 
 // ------ Actions ------
