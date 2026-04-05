@@ -1,7 +1,7 @@
 <template>
-  <div class="flex w-full flex-col gap-0">
+  <div class="flex w-full flex-col">
     <!-- Top Bar -->
-    <div class="border-muted flex items-center justify-between border-b px-2 py-2">
+    <div class="border-muted flex w-full items-center justify-between border-b px-2 py-2">
       <UTabs
         :items="tabItems"
         :model-value="store.tab"
@@ -9,14 +9,17 @@
         variant="link"
         @update:model-value="handleTabChange"
         class="-mb-2"
+        :ui="{
+          list: 'border-muted',
+        }"
       />
       <UButton :icon="ICONS.ADD" :label="createLabel" @click="handleCreateClick" />
     </div>
 
     <!-- Two-Panel Layout -->
-    <div class="grid h-[calc(100vh-10rem)] grid-cols-[320px_1fr]">
+    <div class="grid h-[calc(100vh-10rem)] w-full grid-cols-[320px_1fr]">
       <!-- Left Panel -->
-      <div class="border-muted flex flex-col gap-2 overflow-hidden border-r p-2">
+      <div class="border-muted flex w-full flex-col gap-2 overflow-hidden border-r p-2">
         <DashboardPlayerList
           v-if="store.tab === 'players'"
           @request-select="handleRequestSelectPlayer"
@@ -57,7 +60,13 @@
             <DashboardEditorContextHeader label="Editing Player" :title="store.selectedPlayer.name">
               <template #actions>
                 <UButton label="Save" :loading="isSavingPlayer" @click="handleSavePlayer" />
-                <UButton label="Delete" color="error" variant="soft" @click="handleDeletePlayer" />
+                <UButton
+                  label="Delete"
+                  color="error"
+                  variant="soft"
+                  :loading="isDeletingPlayer"
+                  @click="handleDeletePlayer"
+                />
               </template>
             </DashboardEditorContextHeader>
             <DashboardPlayerEditor />
@@ -94,7 +103,13 @@
                   :loading="isSavingSkin"
                   @click="skinEditorRef?.submitSave()"
                 />
-                <UButton label="Delete" color="error" variant="soft" @click="handleDeleteSkin" />
+                <UButton
+                  label="Delete"
+                  color="error"
+                  variant="soft"
+                  :loading="isDeletingSkin"
+                  @click="handleDeleteSkin"
+                />
               </template>
             </DashboardEditorContextHeader>
             <DashboardSkinEditor ref="skinEditorRef" :skin="store.selectedSkin" />
@@ -137,8 +152,8 @@
       @save="handleDiscardSave"
       @discard="handleDiscardDiscard"
       @cancel="
-        pendingAction = null;
-        isDiscardOpen = false;
+        discardGuard.clearPending();
+        discardGuard.close();
       "
     />
   </div>
@@ -149,7 +164,6 @@ import type { Doc } from "~~/convex/_generated/dataModel";
 import { ICONS } from "~/types/icons";
 
 // ------ Local Types & Defaults ------
-type PendingAction = () => void;
 type CreatePanelRef = {
   submitCreate: () => Promise<void>;
   isLoading: boolean;
@@ -162,11 +176,12 @@ type SkinEditorRef = {
 // ------ External Composables ------
 const store = useDashboardStore();
 const toast = useAppToast();
+const discardGuard = useDiscardGuard(computed(() => store.isDirty));
+const { isSaving: isSavingPlayer, savePlayerDraft } = useDashboardPlayerDraftSave();
 
 // ------ Local State ------
-const isDiscardOpen = ref(false);
-const pendingAction = ref<PendingAction | null>(null);
-const isSavingPlayer = ref(false);
+const isDeletingPlayer = ref(false);
+const isDeletingSkin = ref(false);
 const playerCreateRef = ref<CreatePanelRef | null>(null);
 const skinCreateRef = ref<CreatePanelRef | null>(null);
 const skinEditorRef = ref<SkinEditorRef | null>(null);
@@ -187,82 +202,55 @@ const createLabel = computed(() => {
 const isCreatingPlayer = computed(() => !!playerCreateRef.value?.isLoading);
 const isCreatingSkin = computed(() => !!skinCreateRef.value?.isLoading);
 const isSavingSkin = computed(() => !!skinEditorRef.value?.isLoading);
+const isDiscardOpen = computed({
+  get: () => discardGuard.isOpen.value,
+  set: (value: boolean) => {
+    discardGuard.isOpen.value = value;
+  },
+});
 
 // ------ Actions ------
-function guardDirty(action: PendingAction) {
-  if (store.isDirty) {
-    pendingAction.value = action;
-    isDiscardOpen.value = true;
-  } else {
-    action();
-  }
-}
-
-async function savePlayerDraft() {
-  if (!store.selectedPlayer || !store.draftPlayer) return;
-
-  isSavingPlayer.value = true;
-  try {
-    const { hasNameChanged, hasSkinsChanged } = store.playerDiff;
-
-    if (!hasNameChanged && !hasSkinsChanged) {
-      toast.success({ title: "No changes to save." });
-      return;
-    }
-
-    const promises: Promise<unknown>[] = [];
-    if (hasNameChanged) {
-      promises.push(
-        $fetch(`/api/players/${store.selectedPlayer._id}`, {
-          method: "PATCH",
-          body: { name: store.draftPlayer.name },
-        }),
-      );
-    }
-    if (hasSkinsChanged) {
-      promises.push(
-        $fetch(`/api/player-skins/${store.selectedPlayer._id}`, {
-          method: "PUT",
-          body: { skin_ids: store.draftPlayer.skinIds },
-        }),
-      );
-    }
-
-    await Promise.all(promises);
-    store.commitBaseline();
-    toast.success({ title: "Player saved!" });
-  } catch (err) {
-    toast.error({ title: "Failed to save player.", description: (err as Error).message });
-  } finally {
-    isSavingPlayer.value = false;
-  }
-}
-
 async function handleDeletePlayer() {
   if (!store.selectedPlayer) return;
-  await $fetch(`/api/players/${store.selectedPlayer._id}`, { method: "DELETE" });
-  toast.success({ title: "Player deleted." });
-  store.clearSelection();
+
+  isDeletingPlayer.value = true;
+  try {
+    await $fetch(`/api/players/${store.selectedPlayer._id}`, { method: "DELETE" });
+    toast.success({ title: "Player deleted." });
+    store.clearSelection();
+  } catch (err) {
+    toast.error({ title: "Failed to delete player.", description: (err as Error).message });
+  } finally {
+    isDeletingPlayer.value = false;
+  }
 }
 
 async function handleDeleteSkin() {
   if (!store.selectedSkin) return;
-  await $fetch(`/api/skins/${store.selectedSkin._id}`, { method: "DELETE" });
-  toast.success({ title: "Skin deleted." });
-  store.clearSelection();
+
+  isDeletingSkin.value = true;
+  try {
+    await $fetch(`/api/skins/${store.selectedSkin._id}`, { method: "DELETE" });
+    toast.success({ title: "Skin deleted." });
+    store.clearSelection();
+  } catch (err) {
+    toast.error({ title: "Failed to delete skin.", description: (err as Error).message });
+  } finally {
+    isDeletingSkin.value = false;
+  }
 }
 
 // ------ Handlers ------
 function handleTabChange(newTab: string | number) {
-  guardDirty(() => store.setTab(newTab as typeof store.tab));
+  discardGuard.guard(() => store.setTab(newTab as typeof store.tab));
 }
 
 function handleCreateClick() {
-  guardDirty(() => store.enterCreateMode());
+  discardGuard.guard(() => store.enterCreateMode());
 }
 
 function handleRequestSelectPlayer(player: Doc<"players">) {
-  guardDirty(() => store.selectPlayer(player));
+  discardGuard.guard(() => store.selectPlayer(player));
 }
 
 function handleSavePlayer() {
@@ -270,18 +258,16 @@ function handleSavePlayer() {
 }
 
 async function handleDiscardSave() {
-  isDiscardOpen.value = false;
+  discardGuard.close();
   await savePlayerDraft();
-  const next = pendingAction.value;
-  pendingAction.value = null;
+  const next = discardGuard.consumePending();
   next?.();
 }
 
 function handleDiscardDiscard() {
   store.resetDraft();
-  isDiscardOpen.value = false;
-  const next = pendingAction.value;
-  pendingAction.value = null;
+  discardGuard.close();
+  const next = discardGuard.consumePending();
   next?.();
 }
 

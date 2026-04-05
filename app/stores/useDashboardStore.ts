@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type { Doc, Id } from "~~/convex/_generated/dataModel";
+import { hasSetDifference } from "~/utils/hasSetDifference";
 
 // ------ Local Types ------
 export type DashboardTab = "players" | "skins" | "requests";
@@ -32,14 +33,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
     if (draftPlayer.value.name.trim() !== _baseline.value.name) return true;
 
-    const current = new Set(draftPlayer.value.skinIds);
-    const base = new Set(_baseline.value.skinIds);
-    if (current.size !== base.size) return true;
-    for (const id of current) {
-      if (!base.has(id)) return true;
-    }
-
-    return false;
+    return hasSetDifference(draftPlayer.value.skinIds, _baseline.value.skinIds);
   });
 
   // ------ Actions ------
@@ -92,18 +86,11 @@ export const useDashboardStore = defineStore("dashboard", () => {
 
   // Returns which fields differ between draft and baseline (used by save logic in views)
   const playerDiff = computed(() => {
-    if (!draftPlayer.value || !_baseline.value) return { hasNameChanged: false, hasSkinsChanged: false };
+    if (!draftPlayer.value || !_baseline.value)
+      return { hasNameChanged: false, hasSkinsChanged: false };
 
     const hasNameChanged = draftPlayer.value.name.trim() !== _baseline.value.name;
-
-    const current = new Set(draftPlayer.value.skinIds);
-    const base = new Set(_baseline.value.skinIds);
-    let hasSkinsChanged = current.size !== base.size;
-    if (!hasSkinsChanged) {
-      for (const id of current) {
-        if (!base.has(id)) { hasSkinsChanged = true; break; }
-      }
-    }
+    const hasSkinsChanged = hasSetDifference(draftPlayer.value.skinIds, _baseline.value.skinIds);
 
     return { hasNameChanged, hasSkinsChanged };
   });
