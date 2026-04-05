@@ -1,292 +1,109 @@
-# AI Agent Instructions & Codebase Standards
+# AI Agent Instructions and Codebase Standards
 
-This document serves as the source of truth for AI agents (GitHub Copilot, etc.) working on this repository. Follow these rules strictly to maintain code quality, consistency, and the specific architectural philosophy of the project.
+This document is the source of truth for AI agents working in this repository.
+Rules in this file are mandatory unless the user explicitly overrides them.
 
-## 🧠 Core Philosophy
+## 1. Tooling and Execution Defaults
 
-1.  **Simplicity Over Abstraction**: Do not over-engineer. Prefers simple, explicitly readable code over complex, "clever" abstractions.
-2.  **Explicit Readability**: Use small helper functions (e.g., `closeModal()`, `resetForm()`, `resetLoadingState()`) inside components, even if they are one-liners. This makes the code self-documenting and easier for humans to parse.
-3.  **Granular UX Feedback**: We value explicit loading states (e.g., "Uploading images...", "Saving to database...", "Refreshing...") over simple boolean `isLoading` spinners.
+- Use Bun for dependency and script management.
+- Use `bun install` to install dependencies.
+- Use `bun run <script>` to run project scripts.
+- Use `bunx <tool>` for one-off CLIs.
+- Prefer bash-style commands and command syntax.
+- If the environment blocks bash usage on Windows, PowerShell fallback is allowed.
 
----
+## 2. Stack Defaults
 
-## 🛠 Coding Standards
+- Nuxt is the app framework.
+- Nuxt UI is the component UI system.
+- Convex is the backend data layer.
+- Pinia is the state store for shared state.
 
-### 1. Types (Convex)
+## 3. Architecture Rules
 
-- **ALWAYS** use the generated types from Convex.
-- **NEVER** infer types manually from API return values if a `Doc` type exists.
-- **NEVER** use `any`.
+- Keep components single responsibility.
+- Use Pinia when state or actions are shared across pages or domain boundaries.
+- Keep local UI-only state in the component or a focused composable.
+- Abstract hard logic into composables or helpers.
+- Do not abstract trivial logic that is clearer inline.
+- Favor simple, explicit code over clever abstractions.
 
-```typescript
-// ✅ DO:
-import type { Doc, Id } from "~~/convex/_generated/dataModel";
-type Skin = Doc<"skins">;
-type PlayerId = Id<"players">;
+## 4. Naming and Readability Rules
 
-// ❌ DON'T:
-type Skin = (typeof api.skins.listSkins._returnType)[0];
-```
+- Use descriptive and consistent names for functions, variables, and types.
+- Prefer readability at first glance over short or clever naming.
+- Keep files and functions small enough to change safely.
+- If a type is too complex inline, move it to a dedicated type file.
 
-### 2. Modals
+## 5. Vue and Nuxt Script Setup Order
 
-- **Parent-Controlled**: Modals must **not** have their own trigger buttons. They should be controlled via `v-model:open` (using `defineModel`) from the parent.
-- **Structure**:
-  ```vue
-  <script setup>
-  const isOpen = defineModel < boolean > ("open", { required: true });
-  </script>
-  ```
+Use the same section order across the app for `<script setup>`:
 
-### 3. Form State
+1. Imports
+2. Local types
+3. Props and emits and models
+4. External composables
+5. Local state (group by kind: string, number, boolean, array, object)
+6. Actions (small readable helpers are allowed)
+7. Handlers
+8. Watches
+9. Lifecycle
+10. Other items that do not fit above
 
-- Use the `useResettableRef` composable for form data to ensure easy resetting.
-- **Pattern**:
-  ```typescript
-  const getDefaults = () => ({ name: "", age: 0 });
-  const { state: form, reset: resetForm } = useResettableRef(getDefaults);
-  ```
+Additional rules:
 
-### 4. Submission & Actions
+- Keep related code together.
+- Use reactive props destructuring.
+- Use `defineModel` for `v-model` contracts.
 
-- Use the `useSubmitAction` composable for consistent error handling and toast notifications.
-- **CRITICAL**: You must explicitly allow the developer to set specific status messages during the process. Do not abstract this away.
-- **Pattern**:
+See [docs/agent-standards/script-setup-order.md](docs/agent-standards/script-setup-order.md) for full examples.
 
-  ```typescript
-  const { handleSubmit, statusMessage } = useSubmitAction();
+## 6. UX Feedback Standards
 
-  const onSave = () => handleSubmit(async () => {
-      statusMessage.value = "Validating...";
-      if (invalid) return false; // Handled exit
+- Use explicit loading states for async operations.
+- Keep status text specific to the current step.
+- Keep toast messaging consistent across admin and user flows.
+- Do not remove explicit status updates during refactors.
+- Prefer `useSubmitAction` for submit flows where applicable.
 
-      statusMessage.value = "Saving data...";
-      await mutation(...);
-  }, { successTitle: "Done!" });
-  ```
+See [docs/agent-standards/toast-loading-consistency.md](docs/agent-standards/toast-loading-consistency.md) for detailed patterns.
 
-### 5. Composables vs Components
+## 7. Type Safety and Convex Rules
 
-- **Composables**: Should generally handle business logic and return state/methods.
+- Always use generated Convex types from `~~/convex/_generated/dataModel`.
+- Never use `any`.
+- Never replace available `Doc` or `Id` types with inferred alternatives.
+- Keep mutations, queries, and actions type safe end-to-end.
 
-### 6. Vue 3.5+ Modern Syntax
+## 8. Security Baseline
 
-- **Props Destructuring**: Use reactive props destructuring. Do **NOT** use `withDefaults` or `props.x`.
+Every implementation and review must include a security check.
 
-  ```typescript
-  // ✅ DO:
-  const { title = "Default", count } = defineProps<{ title?: string; count: number }>();
-  // Use `title` directly in script and template. It stays reactive.
+- Validate untrusted input on the server.
+- Do not trust client-side validation for security decisions.
+- Enforce auth and authorization at server boundaries.
+- Avoid exposing secrets or sensitive fields to the client.
+- Check new code for obvious vulnerabilities and unsafe assumptions.
 
-  // ❌ DON'T:
-  const props = withDefaults(defineProps<Props>(), { ... });
-  console.log(props.title);
-  ```
+See [docs/agent-standards/security-checklist.md](docs/agent-standards/security-checklist.md) for the required checklist.
 
-- **Models**: Use `defineModel` for all v-model bindings.
-  ```typescript
-  const modelValue = defineModel<string>({ required: true });
-  ```
+## 9. Modal and Interaction Rules
 
-### 7. Workflow: Adding a New Player Field
+- Avoid modal overuse; do not create modal-heavy workflows.
+- Keep the dashboard strategy that avoids modal hell.
+- Modal open state must be parent controlled via `v-model`.
+- Modal components must not include their own trigger buttons.
 
-When adding a new field to the `players` table, you **MUST** update all of the following files to ensure consistency:
+## 10. Commit Message and Git Behavior
 
-1.  **Schema Definition** (`convex/schema.ts`):
-    - Add the new field to the `players` table definition.
-    - Example: `new_field: v.optional(v.string())`.
-
-2.  **Backend Mutations** (`convex/players.ts`):
-    - **`createPlayer`**: Add the field to `args` and the `insert` payload.
-    - **`updatePlayer`**: Add the field to `args` (usually optional) and the `patch` logic.
-
-3.  **Sync Logic** (`app/composables/usePlayerSync.ts`):
-    - **`syncPlayer`**: Add logic to compare the old value vs. the new value from the API.
-    - Include the new field in the `updatePlayerMutation` call if it has changed.
-
-4.  **Frontend Modals**:
-    - **`CreatePlayer.vue`**: Add the input field to the form and include it in the `createPlayer` mutation.
-    - **`EditPlayer.vue`**: Add the input field, update the local form state, and include it in the `updatePlayer` mutation.
-
----
-
-## 🚫 Anti-Patterns (Don'ts)
-
-- **Don't** create "Trigger Buttons" inside Modal components.
-- **Don't** catch errors inside components without updating a loading state or showing a toast (use `useSubmitAction` to handle this automatically).
-- **Don't** remove the explicit `statusMessage.value = ...` updates when refactoring. These are required for UX.
-
----
-
-## Script Setup Organization Cheat Sheet (Vue 3 / Nuxt 3)
-
-When generating or refactoring Vue 3 components using `<script setup>`, **ALWAYS organize the code following the section order and responsibilities below**.
-
-Each section has **one single purpose**.  
-Do NOT mix responsibilities between sections.
-
----
-
-### // ------ Local Types & Defaults ------
-
-**Purpose:**  
-Declare **types, interfaces, enums, and default values** that are **local to the component**.
-
-**Rules:**
-
-- Types defined here MUST NOT be reused outside this component.
-- Default objects or constants tightly coupled to the component belong here.
-- Do NOT place runtime logic or reactive state here.
-
-**Examples:**
-**Use Reactive Props Destructuring** (Vue 3.5+). Do NOT use `withDefaults`.
-
--
-- `type LocalFormState`
-- `interface UploadOptions`
-- `const DEFAULT_STATUS = "idle"`
-
----
-
-### // ------ Props & Emits ------
-
-**Purpose:**  
-Define the **public API** of the component.
-
-**Rules:**
-
-- Only `defineProps`, `defineEmits`, and `defineModel` are allowed here.
-- No logic, no derived values, no side effects.
-- Props typing must be explicit.
-
----
-
-### // ------ External Composables ------
-
-**Purpose:**  
-Initialize **external dependencies and composables**.
-
-**Rules:**
-
-- Only composables imported from outside the component.
-- Includes: `useRoute`, `useAppToast`, `useConvexMutation`, `useResettableRef`, `useSubmitAction`, etc.
-- Do NOT define local refs or computed values here.
-- If a composable exposes state, it is still initialized here.
-
----
-
-### // ------ Local State ------
-
-**Purpose:**  
-Declare the component’s **reactive source of truth**.
-
-**Rules:**
-
-- Only `ref`, `reactive`, or `shallowRef`.
-- No derived values.
-- No side effects.
-- This section defines _what the component knows_, not _what it does_.
-
----
-
-### // ------ Computed ------
-
-**Purpose:**  
-Declare **derived state** based on local state, props, or composables.
-
-**Rules:**
-
-- ONLY `computed`.
-- Must be deterministic and side-effect free.
-- Must NOT mutate state.
-- If logic becomes complex, extract it to a helper or composable.
-
----
-
-### // ------ Watchers ------
-
-**Purpose:**  
-React to **state changes**.
-
-**Rules:**
-
-- Only `watch` or `watchEffect`.
-- No reusable logic should live here.
-- Side effects triggered by reactive changes belong here.
-- Do NOT use watchers as a replacement for computed.
-
----
-
-### // ------ Actions ------
-
-**Purpose:**  
-Define **intentional operations** that **mutate state and/or trigger side effects**.
-
-**Rules:**
-
-- Actions MAY:
-  - mutate refs
-  - call composables
-  - perform async operations
-- Actions represent _what the component does_, not event wiring.
-- Actions are NOT pure functions.
-
-**Examples:**
-
-- `resetAll`
-- `submitForm`
-- `deleteItem`
-- `closeModal`
-
----
-
-### // ------ Handlers ------
-
-**Purpose:**  
-Bind **events to actions**.
-
-**Rules:**
-
-- Handlers are thin wrappers.
-- They typically call one or more Actions.
-- Prefer naming with `handleX`.
-
-**Examples:**
-
-- `handleSubmit`
-- `handleClick`
-- `handleDrop`
-
----
-
-### // ------ Lifecycle ------
-
-**Purpose:**  
-Register lifecycle hooks.
-
-**Rules:**
-
-- Only Vue lifecycle hooks (`onMounted`, `onUnmounted`, etc).
-- No logic definition here — only orchestration.
-- Heavy logic must be delegated to Actions.
-
----
-
-### General Rules
-
-- Do NOT reorder sections.
-- Do NOT skip sections if relevant.
-- Do NOT mix responsibilities.
-- If unsure where code belongs, ask:
-  **"Is this state, derivation, reaction, or action?"**
-
----
-
-## 📝 Git & Commit Guidelines
-
-- **Commit Suggestions**: When asked for a commit message suggestion:
-  1.  Analyze the changes made.
-  2.  Provide **ONLY** the markdown text of the commit message (subject and body).
-  3.  **DO NOT** execute the commit.
-  4.  **DO NOT** generate a terminal command (like `git commit -m ...`).
-  5.  Wait for the user to review and manually commit.
+- When asked for a commit message, return only commit message text.
+- Do not execute git commit commands unless explicitly requested.
+- If changes are large, suggest smaller, logical commits.
+
+## 11. Detailed Standards and Workflows
+
+- Overview and rationale: [docs/agent-standards/overview.md](docs/agent-standards/overview.md)
+- Script setup ordering: [docs/agent-standards/script-setup-order.md](docs/agent-standards/script-setup-order.md)
+- Security checklist: [docs/agent-standards/security-checklist.md](docs/agent-standards/security-checklist.md)
+- Loading and toast consistency: [docs/agent-standards/toast-loading-consistency.md](docs/agent-standards/toast-loading-consistency.md)
+- Workflow: adding a player field: [docs/workflows/adding-player-field.md](docs/workflows/adding-player-field.md)

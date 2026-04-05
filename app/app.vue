@@ -100,21 +100,7 @@ const menuItems = computed<NavigationMenuItem[]>(() => {
     items.push({
       label: "Dashboard",
       icon: ICONS.DASHBOARD,
-      children: [
-        {
-          label: "Manage Players",
-          to: "/dashboard/players",
-          icon: ICONS.USER_COG,
-          description: "Add, edit, or remove players from the website and listing.",
-        },
-        {
-          label: "Manage Skins",
-          to: "/dashboard/skins",
-          icon: ICONS.FOLDER,
-          description:
-            "Add, edit, or remove skins from the website and listing. You can change the skin name, author, images and download links here.",
-        },
-      ],
+      to: "/dashboard",
     });
   }
 

@@ -82,7 +82,6 @@
 import { ICONS } from "~/types/icons";
 import { api } from "~~/convex/_generated/api";
 import { useIntersectionObserver } from "@vueuse/core";
-import Fuse from "fuse.js";
 
 // ------ Local Types & Defaults ------
 type SortField = "name" | "_creationTime";
@@ -114,15 +113,8 @@ const sortedSkins = computed(() => {
   return sortDir.value === "desc" ? list.reverse() : list;
 });
 
-const filteredSkins = computed(() => {
-  if (!inputSearch.value) return sortedSkins.value;
-
-  const fuse = new Fuse(sortedSkins.value, {
-    keys: ["name", "author", "playerNames"],
-    threshold: 0.3,
-  });
-
-  return fuse.search(inputSearch.value).map((result) => result.item);
+const filteredSkins = useFuzzyFilter(sortedSkins, inputSearch, {
+  keys: ["name", "author", "playerNames"],
 });
 
 // ------ Actions ------

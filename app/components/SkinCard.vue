@@ -99,7 +99,6 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from "@nuxt/ui";
 import { formatTimeAgo } from "@vueuse/core";
-import { TOAST } from "~/types/constants";
 import { ICONS } from "~/types/icons";
 import type { Doc } from "~~/convex/_generated/dataModel";
 
@@ -114,7 +113,7 @@ const props = defineProps<{
 }>();
 
 // ------ External Composables ------
-const toast = useToast();
+const toast = useAppToast();
 const { isAdmin } = useAuth();
 
 // ------ Local State ------
@@ -186,15 +185,15 @@ async function handleSkinDeletion() {
       body: props.skin.preview_images,
     });
 
-    toast.add({
-      icon: ICONS.SUCCESS,
+    toast.success({
       title: "Skin Deleted",
       description: `The skin "${props.skin.name}" has been deleted successfully.`,
-      color: "success",
-      duration: TOAST.DURATION.SUCCESS,
     });
   } catch (error) {
-    console.error("Error deleting skin:", error);
+    toast.error({
+      title: "Failed to delete skin.",
+      description: (error as Error).message,
+    });
   } finally {
     isLoading.value = false;
   }
@@ -208,7 +207,10 @@ async function handleDownload() {
 
     await $fetch(`/api/skins/${props.skin._id}/download`, { method: "POST" });
   } catch (error) {
-    console.error("Failed to update the download count.");
+    toast.error({
+      title: "Failed to update download count.",
+      description: (error as Error).message,
+    });
   } finally {
     isLoading.value = false;
   }
