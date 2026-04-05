@@ -14,18 +14,20 @@
 // ------ Local Types & Defaults ------
 const getDefaults = () => ({ osu_id: undefined as number | undefined });
 
+// ------ Props & Emits ------
+defineExpose({
+  submitCreate,
+  get isLoading() {
+    return isLoading.value;
+  },
+});
+
 // ------ External Composables ------
 const store = useDashboardStore();
 const toast = useAppToast();
 const { fetchPlayerInfo } = usePlayerSync();
 const { handleSubmit, statusMessage, isLoading } = useSubmitAction();
 const { state: formState, reset: resetForm } = useResettableRef(getDefaults);
-
-// ------ Props & Emits ------
-defineExpose({
-  submitCreate,
-  isLoading,
-});
 
 // ------ Handlers ------
 async function submitCreate() {

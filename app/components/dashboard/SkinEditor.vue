@@ -24,9 +24,14 @@ type Skin = Doc<"skins">;
 
 // ------ Props & Emits ------
 const { skin } = defineProps<{ skin: Skin }>();
+defineExpose({
+  submitSave,
+  get isLoading() {
+    return isLoading.value;
+  },
+});
 
 // ------ External Composables ------
-const store = useDashboardStore();
 const toast = useAppToast();
 const { handleSubmit, statusMessage, isLoading } = useSubmitAction();
 
@@ -36,26 +41,6 @@ const getDefaults = () => ({
   downloadUrl: skin.download_url,
 });
 const { state: formState, reset: resetForm } = useResettableRef(getDefaults);
-
-// ------ Props & Emits ------
-defineExpose({
-  submitSave,
-  isLoading,
-});
-
-// ------ Watchers ------
-// Re-sync form when selection changes
-watch(
-  () => skin._id,
-  () => resetForm(),
-  { immediate: false },
-);
-
-// ------ Actions ------
-function handleCancel() {
-  resetForm();
-  store.clearSelection();
-}
 
 // ------ Handlers ------
 async function submitSave() {
@@ -86,4 +71,11 @@ async function submitSave() {
     { errorTitle: "Failed to update the skin." },
   );
 }
+
+// ------ Watches ------
+watch(
+  () => skin._id,
+  () => resetForm(),
+  { immediate: false },
+);
 </script>
